@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Auriculares Bluetooth",
+    "precio": 15999,
+    "imagen": "https://placehold.co/300x300?text=Auriculares",
+    "stock": 12,
+    "categoria": "Tecnología"
+  },
+  {
+    "id": 2,
+    "nombre": "Mochila Urbana",
+    "precio": 8999,
+    "imagen": "https://placehold.co/300x300?text=Mochila",
+    "stock": 8,
+    "categoria": "Accesorios"
+  },
+  {
+    "id": 3,
+    "nombre": "Zapatillas Running",
+    "precio": 24999,
+    "imagen": "https://placehold.co/300x300?text=Zapatillas",
+    "stock": 5,
+    "categoria": "Indumentaria"
+  },
+  {
+    "id": 4,
+    "nombre": "Mate de Algarrobo",
+    "precio": 4999,
+    "imagen": "https://placehold.co/300x300?text=Mate",
+    "stock": 20,
+    "categoria": "Hogar"
+  },
+  {
+    "id": 5,
+    "nombre": "Teclado Mecánico",
+    "precio": 32999,
+    "imagen": "https://placehold.co/300x300?text=Teclado",
+    "stock": 0,
+    "categoria": "Tecnología"
+  },
+  {
+    "id": 6,
+    "nombre": "Botella Térmica",
+    "precio": 6999,
+    "imagen": "https://placehold.co/300x300?text=Botella",
+    "stock": 15,
+    "categoria": "Hogar"
+  }
+]
