@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
 const formatPrice = (value) =>
@@ -12,8 +13,14 @@ function Cart({ isOpen, onClose }) {
     clearCart,
     totalPrice,
   } = useCart()
+  const navigate = useNavigate()
 
   if (!isOpen) return null
+
+  const handleCheckout = () => {
+    onClose()
+    navigate('/checkout')
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -92,6 +99,13 @@ function Cart({ isOpen, onClose }) {
               <span>Total</span>
               <span>{formatPrice(totalPrice)}</span>
             </div>
+            <button
+              type="button"
+              onClick={handleCheckout}
+              className="mb-2 w-full rounded-md bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              Finalizar compra
+            </button>
             <button
               type="button"
               onClick={clearCart}
