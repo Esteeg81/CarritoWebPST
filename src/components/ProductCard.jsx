@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
 const formatPrice = (value) =>
@@ -9,16 +10,20 @@ function ProductCard({ product }) {
 
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <img
-        src={product.imagen}
-        alt={product.nombre}
-        className="aspect-square w-full object-cover"
-      />
+      <Link to={`/producto/${product.id}`}>
+        <img
+          src={product.imagen}
+          alt={product.nombre}
+          className="aspect-square w-full object-cover"
+        />
+      </Link>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
           {product.categoria}
         </span>
-        <h3 className="font-semibold text-slate-800">{product.nombre}</h3>
+        <Link to={`/producto/${product.id}`} className="hover:underline">
+          <h3 className="font-semibold text-slate-800">{product.nombre}</h3>
+        </Link>
         <p className="text-lg font-bold text-slate-900">
           {formatPrice(product.precio)}
         </p>

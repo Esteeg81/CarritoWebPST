@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import ProductList from './components/ProductList'
+import ProductDetail from './components/ProductDetail'
 import Cart from './components/Cart'
 import Login from './components/Login'
 import Checkout from './components/Checkout'
@@ -21,6 +22,7 @@ function App() {
             <main className="mx-auto max-w-6xl px-4 py-8">
               <Routes>
                 <Route path="/" element={<ProductList />} />
+                <Route path="/producto/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route
                   path="/checkout"
