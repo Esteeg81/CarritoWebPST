@@ -1,8 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
 import { AuthProvider } from '../context/AuthContext'
+import { api } from '../lib/api'
+
+vi.mock('../lib/api', () => ({
+  api: { get: vi.fn(), post: vi.fn() },
+  ApiError: class ApiError extends Error {
+    status: number
+    constructor(status: number, message: string) {
+      super(message)
+      this.status = status
+    }
+  },
+}))
 
 function renderProtected() {
   return render(
@@ -24,21 +36,26 @@ function renderProtected() {
   )
 }
 
+beforeEach(() => {
+  vi.mocked(api.get).mockReset()
+  vi.mocked(api.post).mockReset()
+})
+
 describe('ProtectedRoute', () => {
-  it('redirige a /login si no hay sesión iniciada', () => {
+  it('redirige a /login si no hay sesión iniciada', async () => {
     renderProtected()
 
-    expect(screen.getByText('Login Page')).toBeInTheDocument()
+    expect(await screen.findByText('Login Page')).toBeInTheDocument()
   })
 
-  it('muestra el contenido si hay una sesión iniciada', () => {
-    localStorage.setItem(
-      'carritoweb_user',
-      JSON.stringify({ id: 1, nombre: 'Juan Pérez', email: 'juan@example.com' }),
-    )
+  it('muestra el contenido si hay una sesión válida', async () => {
+    localStorage.setItem('carritoweb_token', 'valid-token')
+    vi.mocked(api.get).mockResolvedValueOnce({
+      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com' },
+    })
 
     renderProtected()
 
-    expect(screen.getByText('Contenido protegido')).toBeInTheDocument()
+    expect(await screen.findByText('Contenido protegido')).toBeInTheDocument()
   })
 })

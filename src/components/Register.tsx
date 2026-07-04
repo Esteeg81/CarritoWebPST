@@ -8,11 +8,13 @@ function Register() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError('')
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.')
@@ -23,7 +25,10 @@ function Register() {
       return
     }
 
-    const result = register(nombre, email, password)
+    setIsSubmitting(true)
+    const result = await register(nombre, email, password)
+    setIsSubmitting(false)
+
     if (result.success) {
       navigate('/', { replace: true })
     } else {
@@ -92,9 +97,10 @@ function Register() {
 
         <button
           type="submit"
-          className="rounded-md bg-slate-900 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+          disabled={isSubmitting}
+          className="rounded-md bg-slate-900 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          Registrarme
+          {isSubmitting ? 'Creando cuenta...' : 'Registrarme'}
         </button>
       </form>
       <p className="mt-4 text-center text-sm text-slate-500">

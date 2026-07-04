@@ -1,9 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import productsData from '../data/products.json'
+import { api, ApiError } from '../lib/api'
 import { useCart } from '../hooks/useCart'
 import type { Product } from '../types'
-
-const products = productsData as Product[]
 
 const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
@@ -11,9 +10,29 @@ const formatPrice = (value: number) =>
 function ProductDetail() {
   const { id } = useParams()
   const { addToCart } = useCart()
-  const product = products.find((p) => p.id === Number(id))
+  const [product, setProduct] = useState<Product | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
 
-  if (!product) {
+  useEffect(() => {
+    setIsLoading(true)
+    setNotFound(false)
+    api
+      .get<Product>(`/api/products/${id}`)
+      .then(setProduct)
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 404) {
+          setNotFound(true)
+        }
+      })
+      .finally(() => setIsLoading(false))
+  }, [id])
+
+  if (isLoading) {
+    return <p className="text-center text-slate-500">Cargando...</p>
+  }
+
+  if (notFound || !product) {
     return (
       <div className="mx-auto max-w-md text-center text-slate-500">
         <p>No encontramos ese producto.</p>

@@ -10,6 +10,7 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -17,13 +18,17 @@ function Login() {
   const state = location.state as LocationState | null
   const from = state?.from?.pathname ?? '/'
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const success = login(email, password)
-    if (success) {
+    setError('')
+    setIsSubmitting(true)
+    const result = await login(email, password)
+    setIsSubmitting(false)
+
+    if (result.success) {
       navigate(from, { replace: true })
     } else {
-      setError('Email o contraseña incorrectos.')
+      setError(result.message ?? 'Email o contraseña incorrectos.')
     }
   }
 
@@ -62,9 +67,10 @@ function Login() {
 
         <button
           type="submit"
-          className="rounded-md bg-slate-900 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+          disabled={isSubmitting}
+          className="rounded-md bg-slate-900 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          Ingresar
+          {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </button>
       </form>
       <p className="mt-4 text-center text-sm text-slate-500">
@@ -74,7 +80,7 @@ function Login() {
         </Link>
       </p>
       <p className="mt-2 text-xs text-slate-400">
-        Mock: juan@example.com / 1234 · ana@example.com / abcd
+        Usuarios de prueba: juan@example.com / 1234 · ana@example.com / abcd
       </p>
     </div>
   )

@@ -1,89 +1,94 @@
 import { createContext, useEffect, useState, type ReactNode } from 'react'
-import mockUsersData from '../data/users.json'
-import type { StoredUser, User } from '../types'
+import { api, ApiError } from '../lib/api'
+import type { User } from '../types'
 
-const mockUsers = mockUsersData as StoredUser[]
-
-interface RegisterResult {
+interface AuthResult {
   success: boolean
   message?: string
 }
 
+interface AuthResponse {
+  token: string
+  user: User
+}
+
 interface AuthContextValue {
   user: User | null
-  login: (email: string, password: string) => boolean
-  register: (nombre: string, email: string, password: string) => RegisterResult
-  logout: () => void
   isAuthenticated: boolean
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<AuthResult>
+  register: (nombre: string, email: string, password: string) => Promise<AuthResult>
+  logout: () => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
-const SESSION_KEY = 'carritoweb_user'
-const REGISTERED_USERS_KEY = 'carritoweb_registered_users'
+const TOKEN_KEY = 'carritoweb_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem(SESSION_KEY)
-    return stored ? JSON.parse(stored) : null
-  })
-
-  const [registeredUsers, setRegisteredUsers] = useState<StoredUser[]>(() => {
-    const stored = localStorage.getItem(REGISTERED_USERS_KEY)
-    return stored ? JSON.parse(stored) : []
-  })
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(registeredUsers))
-  }, [registeredUsers])
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
 
-  const startSession = (fullUser: StoredUser) => {
-    const { password: _password, ...safeUser } = fullUser
-    setUser(safeUser)
-    localStorage.setItem(SESSION_KEY, JSON.stringify(safeUser))
+    api
+      .get<{ user: User }>('/api/auth/me', token)
+      .then((data) => setUser(data.user))
+      .catch(() => localStorage.removeItem(TOKEN_KEY))
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      const data = await api.post<AuthResponse>('/api/auth/login', { email, password })
+      localStorage.setItem(TOKEN_KEY, data.token)
+      setUser(data.user)
+      return { success: true }
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : 'No se pudo iniciar sesión.'
+      return { success: false, message }
+    }
   }
 
-  const login = (email: string, password: string) => {
-    const allUsers = [...mockUsers, ...registeredUsers]
-    const match = allUsers.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-    )
-    if (!match) return false
-
-    startSession(match)
-    return true
-  }
-
-  const register = (
+  const register = async (
     nombre: string,
     email: string,
     password: string,
-  ): RegisterResult => {
-    const allUsers = [...mockUsers, ...registeredUsers]
-    const emailTaken = allUsers.some(
-      (u) => u.email.toLowerCase() === email.toLowerCase(),
-    )
-    if (emailTaken) {
-      return { success: false, message: 'Ese email ya está registrado.' }
+  ): Promise<AuthResult> => {
+    try {
+      const data = await api.post<AuthResponse>('/api/auth/register', {
+        nombre,
+        email,
+        password,
+      })
+      localStorage.setItem(TOKEN_KEY, data.token)
+      setUser(data.user)
+      return { success: true }
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : 'No se pudo completar el registro.'
+      return { success: false, message }
     }
-
-    const newUser: StoredUser = { id: Date.now(), nombre, email, password }
-    setRegisteredUsers((prev) => [...prev, newUser])
-    startSession(newUser)
-    return { success: true }
   }
 
   const logout = () => {
+    localStorage.removeItem(TOKEN_KEY)
     setUser(null)
-    localStorage.removeItem(SESSION_KEY)
   }
 
   const value: AuthContextValue = {
     user,
+    isAuthenticated: Boolean(user),
+    isLoading,
     login,
     register,
     logout,
-    isAuthenticated: Boolean(user),
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

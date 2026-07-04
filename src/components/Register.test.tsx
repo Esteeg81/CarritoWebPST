@@ -1,9 +1,21 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Register from './Register'
 import { AuthProvider } from '../context/AuthContext'
+import { api, ApiError } from '../lib/api'
+
+vi.mock('../lib/api', () => ({
+  api: { get: vi.fn(), post: vi.fn() },
+  ApiError: class ApiError extends Error {
+    status: number
+    constructor(status: number, message: string) {
+      super(message)
+      this.status = status
+    }
+  },
+}))
 
 function renderRegister() {
   return render(
@@ -32,6 +44,11 @@ async function fillForm(user: UserEvent, values: FormValues) {
   await user.type(screen.getByLabelText(/confirmar contraseña/i), values.confirmPassword)
 }
 
+beforeEach(() => {
+  vi.mocked(api.get).mockReset()
+  vi.mocked(api.post).mockReset()
+})
+
 describe('Register', () => {
   it('muestra error si las contraseñas no coinciden', async () => {
     const user = userEvent.setup()
@@ -46,9 +63,13 @@ describe('Register', () => {
     await user.click(screen.getByRole('button', { name: /registrarme/i }))
 
     expect(await screen.findByText(/no coinciden/i)).toBeInTheDocument()
+    expect(api.post).not.toHaveBeenCalled()
   })
 
   it('rechaza un email ya registrado', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(
+      new ApiError(409, 'Ese email ya está registrado.'),
+    )
     const user = userEvent.setup()
     renderRegister()
 
@@ -64,6 +85,10 @@ describe('Register', () => {
   })
 
   it('registra y navega a home con datos válidos', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({
+      token: 'fake-token',
+      user: { id: 3, nombre: 'Nuevo', email: 'nuevo@example.com' },
+    })
     const user = userEvent.setup()
     renderRegister()
 

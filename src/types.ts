@@ -16,7 +16,3 @@ export interface User {
   nombre: string
   email: string
 }
-
-export interface StoredUser extends User {
-  password: string
-}

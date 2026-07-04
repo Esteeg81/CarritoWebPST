@@ -7,8 +7,12 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
+
+  if (isLoading) {
+    return <p className="text-center text-slate-500">Cargando...</p>
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
