@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
@@ -11,7 +11,7 @@ function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (password !== confirmPassword) {
@@ -27,7 +27,7 @@ function Register() {
     if (result.success) {
       navigate('/', { replace: true })
     } else {
-      setError(result.message)
+      setError(result.message ?? 'No se pudo completar el registro.')
     }
   }
 

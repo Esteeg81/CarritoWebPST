@@ -1,11 +1,23 @@
-import { createContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import type { CartItem, Product } from '../types'
 
-export const CartContext = createContext(null)
+interface CartContextValue {
+  cartItems: CartItem[]
+  addToCart: (product: Product) => void
+  removeFromCart: (productId: number) => void
+  increaseQuantity: (productId: number) => void
+  decreaseQuantity: (productId: number) => void
+  clearCart: () => void
+  totalItems: number
+  totalPrice: number
+}
+
+export const CartContext = createContext<CartContextValue | null>(null)
 
 const STORAGE_KEY = 'carritoweb_cart'
 
-export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(() => {
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
     return stored ? JSON.parse(stored) : []
   })
@@ -14,7 +26,7 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems))
   }, [cartItems])
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
@@ -29,11 +41,11 @@ export function CartProvider({ children }) {
     })
   }
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (productId: number) => {
     setCartItems((prev) => prev.filter((item) => item.id !== productId))
   }
 
-  const increaseQuantity = (productId) => {
+  const increaseQuantity = (productId: number) => {
     setCartItems((prev) =>
       prev.map((item) =>
         item.id === productId && item.cantidad < item.stock
@@ -43,7 +55,7 @@ export function CartProvider({ children }) {
     )
   }
 
-  const decreaseQuantity = (productId) => {
+  const decreaseQuantity = (productId: number) => {
     setCartItems((prev) =>
       prev
         .map((item) =>
@@ -65,7 +77,7 @@ export function CartProvider({ children }) {
     [cartItems],
   )
 
-  const value = {
+  const value: CartContextValue = {
     cartItems,
     addToCart,
     removeFromCart,

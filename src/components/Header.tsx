@@ -2,7 +2,11 @@ import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
 
-function Header({ onCartClick }) {
+interface HeaderProps {
+  onCartClick: () => void
+}
+
+function Header({ onCartClick }: HeaderProps) {
   const { totalItems } = useCart()
   const { user, logout } = useAuth()
 

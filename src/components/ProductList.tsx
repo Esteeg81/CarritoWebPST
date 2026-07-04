@@ -1,5 +1,8 @@
-import products from '../data/products.json'
+import productsData from '../data/products.json'
 import ProductCard from './ProductCard'
+import type { Product } from '../types'
+
+const products = productsData as Product[]
 
 function ProductList() {
   return (

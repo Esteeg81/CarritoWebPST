@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Register from './Register'
 import { AuthProvider } from '../context/AuthContext'
@@ -18,11 +18,18 @@ function renderRegister() {
   )
 }
 
-async function fillForm(user, { nombre, email, password, confirmPassword }) {
-  await user.type(screen.getByLabelText(/^nombre$/i), nombre)
-  await user.type(screen.getByLabelText(/^email$/i), email)
-  await user.type(screen.getByLabelText(/^contraseña$/i), password)
-  await user.type(screen.getByLabelText(/confirmar contraseña/i), confirmPassword)
+interface FormValues {
+  nombre: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+async function fillForm(user: UserEvent, values: FormValues) {
+  await user.type(screen.getByLabelText(/^nombre$/i), values.nombre)
+  await user.type(screen.getByLabelText(/^email$/i), values.email)
+  await user.type(screen.getByLabelText(/^contraseña$/i), values.password)
+  await user.type(screen.getByLabelText(/confirmar contraseña/i), values.confirmPassword)
 }
 
 describe('Register', () => {

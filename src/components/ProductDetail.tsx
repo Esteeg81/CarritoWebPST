@@ -1,8 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
-import products from '../data/products.json'
+import productsData from '../data/products.json'
 import { useCart } from '../hooks/useCart'
+import type { Product } from '../types'
 
-const formatPrice = (value) =>
+const products = productsData as Product[]
+
+const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
 function ProductDetail() {

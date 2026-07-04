@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { CartProvider } from './CartContext'
 import { useCart } from '../hooks/useCart'
+import type { Product } from '../types'
 
-const wrapper = ({ children }) => <CartProvider>{children}</CartProvider>
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <CartProvider>{children}</CartProvider>
+)
 
-const product = {
+const product: Product = {
   id: 1,
   nombre: 'Auriculares Bluetooth',
   precio: 100,
@@ -13,7 +17,7 @@ const product = {
   imagen: 'x.png',
   categoria: 'Tecnología',
 }
-const productBajoStock = { ...product, id: 2, nombre: 'Mate', stock: 1 }
+const productBajoStock: Product = { ...product, id: 2, nombre: 'Mate', stock: 1 }
 
 describe('CartContext', () => {
   it('agrega un producto nuevo con cantidad 1', () => {
@@ -83,7 +87,7 @@ describe('CartContext', () => {
     const { result } = renderHook(() => useCart(), { wrapper })
     act(() => result.current.addToCart(product))
 
-    const stored = JSON.parse(localStorage.getItem('carritoweb_cart'))
+    const stored = JSON.parse(localStorage.getItem('carritoweb_cart') ?? '[]')
     expect(stored).toHaveLength(1)
     expect(stored[0].id).toBe(product.id)
   })

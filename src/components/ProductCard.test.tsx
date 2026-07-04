@@ -5,13 +5,14 @@ import { MemoryRouter } from 'react-router-dom'
 import ProductCard from './ProductCard'
 import { CartProvider } from '../context/CartContext'
 import { useCart } from '../hooks/useCart'
+import type { Product } from '../types'
 
 function CartBadge() {
   const { totalItems } = useCart()
   return <span data-testid="total-items">{totalItems}</span>
 }
 
-function renderWithCart(product) {
+function renderWithCart(product: Product) {
   return render(
     <MemoryRouter>
       <CartProvider>
@@ -22,7 +23,7 @@ function renderWithCart(product) {
   )
 }
 
-const product = {
+const product: Product = {
   id: 1,
   nombre: 'Auriculares Bluetooth',
   precio: 1000,
@@ -30,7 +31,7 @@ const product = {
   imagen: 'x.png',
   categoria: 'Tecnología',
 }
-const sinStock = { ...product, id: 2, stock: 0 }
+const sinStock: Product = { ...product, id: 2, stock: 0 }
 
 describe('ProductCard', () => {
   it('muestra nombre, precio y stock', () => {

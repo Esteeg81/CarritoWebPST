@@ -1,10 +1,15 @@
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
-const formatPrice = (value) =>
+const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
-function Cart({ isOpen, onClose }) {
+interface CartProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+function Cart({ isOpen, onClose }: CartProps) {
   const {
     cartItems,
     removeFromCart,

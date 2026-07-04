@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+
+interface LocationState {
+  from?: { pathname: string }
+}
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -10,9 +14,10 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const from = location.state?.from?.pathname ?? '/'
+  const state = location.state as LocationState | null
+  const from = state?.from?.pathname ?? '/'
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const success = login(email, password)
     if (success) {

@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
 
-const formatPrice = (value) =>
+const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
 function Checkout() {
   const { cartItems, totalPrice, clearCart } = useCart()
   const { user } = useAuth()
   const [confirmado, setConfirmado] = useState(false)
+
+  if (!user) return null
 
   const handleConfirmar = () => {
     clearCart()

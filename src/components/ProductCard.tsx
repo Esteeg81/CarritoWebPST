@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
+import type { Product } from '../types'
 
-const formatPrice = (value) =>
+const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
-function ProductCard({ product }) {
+interface ProductCardProps {
+  product: Product
+}
+
+function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
   const sinStock = product.stock === 0
 
