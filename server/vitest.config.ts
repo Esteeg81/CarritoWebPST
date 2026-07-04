@@ -6,7 +6,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     fileParallelism: false,
     env: {
-      DATABASE_URL: 'file:./prisma/test.db',
+      DATABASE_URL:
+        process.env.TEST_DATABASE_URL ??
+        'postgresql://carrito:carrito_dev_pw@localhost:5432/carritowebpst_test',
       JWT_SECRET: 'test-secret-not-for-production-use-only-in-vitest',
     },
     coverage: {
