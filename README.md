@@ -1,16 +1,49 @@
-# React + Vite
+# CarritoWebPST
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Proyecto de carrito de compras (hobby / primer proyecto en React), con un backend propio en Node.js.
 
-Currently, two official plugins are available:
+**Demo:** https://esteeg81.github.io/CarritoWebPST/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+**Frontend** (`/`)
+- React + Vite + TypeScript
+- Tailwind CSS v4
+- React Router (`HashRouter`, por compatibilidad con GitHub Pages)
+- Context API para carrito y autenticación
+- Vitest + React Testing Library
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Backend** (`/server`)
+- Node.js + Express + TypeScript
+- Prisma ORM + SQLite
+- JWT + bcrypt para autenticación
+- Vitest + Supertest
 
-## Expanding the Oxlint configuration
+## Desarrollo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Frontend
+
+```bash
+npm install
+npm run dev       # http://localhost:5173
+npm test          # tests unitarios
+npm run coverage  # tests con reporte de cobertura
+npm run build     # type-check + build de producción
+```
+
+### Backend
+
+Ver [`server/README.md`](./server/README.md) para el setup completo (variables de entorno, migraciones, seed de datos).
+
+```bash
+cd server
+npm install
+npm run dev   # http://localhost:3001
+npm test
+```
+
+> Nota: por ahora el frontend sigue usando datos mockeados (`src/data/*.json` + `localStorage`) — la conexión al backend real es el próximo paso.
+
+## Deploy
+
+El frontend se publica automáticamente en GitHub Pages en cada push a `main` (ver `.github/workflows/deploy-pages.yml`).
