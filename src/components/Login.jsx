@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 function Login() {
@@ -62,7 +62,13 @@ function Login() {
           Ingresar
         </button>
       </form>
-      <p className="mt-4 text-xs text-slate-400">
+      <p className="mt-4 text-center text-sm text-slate-500">
+        ¿No tenés cuenta?{' '}
+        <Link to="/registro" className="font-medium text-slate-700 underline">
+          Registrate
+        </Link>
+      </p>
+      <p className="mt-2 text-xs text-slate-400">
         Mock: juan@example.com / 1234 · ana@example.com / abcd
       </p>
     </div>
