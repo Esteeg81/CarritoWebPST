@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { prisma } from '../src/lib/prisma.js'
+import { prisma, syncProductIdSequence } from '../src/lib/prisma.js'
 import productsData from '../../src/data/products.json' with { type: 'json' }
 
 interface SeedProduct {
@@ -35,6 +35,7 @@ async function main() {
       },
     })
   }
+  await syncProductIdSequence()
 
   console.log('Sembrando usuarios de prueba...')
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase()

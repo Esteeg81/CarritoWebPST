@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header'
 import ProductList from './components/ProductList'
 import ProductDetail from './components/ProductDetail'
@@ -7,7 +7,9 @@ import Cart from './components/Cart'
 import Login from './components/Login'
 import Register from './components/Register'
 import Checkout from './components/Checkout'
+import AdminLayout from './components/AdminLayout'
 import AdminOrders from './components/AdminOrders'
+import AdminProducts from './components/AdminProducts'
 import ProtectedRoute from './components/ProtectedRoute'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
@@ -39,10 +41,14 @@ function App() {
                   path="/admin"
                   element={
                     <ProtectedRoute adminOnly>
-                      <AdminOrders />
+                      <AdminLayout />
                     </ProtectedRoute>
                   }
-                />
+                >
+                  <Route index element={<Navigate to="pedidos" replace />} />
+                  <Route path="pedidos" element={<AdminOrders />} />
+                  <Route path="productos" element={<AdminProducts />} />
+                </Route>
               </Routes>
             </main>
             <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />

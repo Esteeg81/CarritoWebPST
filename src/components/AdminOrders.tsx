@@ -33,7 +33,7 @@ function AdminOrders() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <h2 className="mb-4 text-lg font-semibold text-slate-800">
         Pedidos ({orders.length})
       </h2>
