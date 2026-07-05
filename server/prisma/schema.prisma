@@ -10,12 +10,19 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   nombre       String
   email        String   @unique
   passwordHash String
+  role         Role     @default(CUSTOMER)
   createdAt    DateTime @default(now())
+  orders       Order[]
 }
 
 model Product {
@@ -26,4 +33,23 @@ model Product {
   stock     Int
   categoria String
   createdAt DateTime @default(now())
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  total     Float
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        Int    @id @default(autoincrement())
+  orderId   Int
+  order     Order  @relation(fields: [orderId], references: [id])
+  productId Int
+  nombre    String
+  precio    Float
+  cantidad  Int
 }

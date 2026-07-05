@@ -16,16 +16,17 @@ vi.mock('../lib/api', () => ({
   },
 }))
 
-function renderProtected() {
+function renderProtected(initialRoute: string, adminOnly = false) {
   return render(
-    <MemoryRouter initialEntries={['/checkout']}>
+    <MemoryRouter initialEntries={[initialRoute]}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/" element={<div>Home Page</div>} />
           <Route
-            path="/checkout"
+            path={initialRoute}
             element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={adminOnly}>
                 <div>Contenido protegido</div>
               </ProtectedRoute>
             }
@@ -43,7 +44,7 @@ beforeEach(() => {
 
 describe('ProtectedRoute', () => {
   it('redirige a /login si no hay sesión iniciada', async () => {
-    renderProtected()
+    renderProtected('/checkout')
 
     expect(await screen.findByText('Login Page')).toBeInTheDocument()
   })
@@ -51,10 +52,32 @@ describe('ProtectedRoute', () => {
   it('muestra el contenido si hay una sesión válida', async () => {
     localStorage.setItem('carritoweb_token', 'valid-token')
     vi.mocked(api.get).mockResolvedValueOnce({
-      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com' },
+      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', role: 'CUSTOMER' },
     })
 
-    renderProtected()
+    renderProtected('/checkout')
+
+    expect(await screen.findByText('Contenido protegido')).toBeInTheDocument()
+  })
+
+  it('redirige a home si adminOnly y el usuario no es admin', async () => {
+    localStorage.setItem('carritoweb_token', 'valid-token')
+    vi.mocked(api.get).mockResolvedValueOnce({
+      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', role: 'CUSTOMER' },
+    })
+
+    renderProtected('/admin', true)
+
+    expect(await screen.findByText('Home Page')).toBeInTheDocument()
+  })
+
+  it('muestra el contenido si adminOnly y el usuario es admin', async () => {
+    localStorage.setItem('carritoweb_token', 'valid-token')
+    vi.mocked(api.get).mockResolvedValueOnce({
+      user: { id: 1, nombre: 'Dueño', email: 'admin@example.com', role: 'ADMIN' },
+    })
+
+    renderProtected('/admin', true)
 
     expect(await screen.findByText('Contenido protegido')).toBeInTheDocument()
   })

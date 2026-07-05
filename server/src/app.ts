@@ -2,6 +2,8 @@ import express, { type Request, type Response } from 'express'
 import cors from 'cors'
 import { authRouter } from './routes/auth.routes.js'
 import { productsRouter } from './routes/products.routes.js'
+import { ordersRouter } from './routes/orders.routes.js'
+import { adminRouter } from './routes/admin.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 export function createApp() {
@@ -16,6 +18,8 @@ export function createApp() {
 
   app.use('/api/auth', authRouter)
   app.use('/api/products', productsRouter)
+  app.use('/api/orders', ordersRouter)
+  app.use('/api/admin', adminRouter)
 
   app.use(errorHandler)
 

@@ -20,7 +20,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 )
 
-const mockUser = { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com' }
+const mockUser = { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', role: 'CUSTOMER' }
 
 beforeEach(() => {
   vi.mocked(api.get).mockReset()

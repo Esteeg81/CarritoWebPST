@@ -7,6 +7,7 @@ import Cart from './components/Cart'
 import Login from './components/Login'
 import Register from './components/Register'
 import Checkout from './components/Checkout'
+import AdminOrders from './components/AdminOrders'
 import ProtectedRoute from './components/ProtectedRoute'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
@@ -31,6 +32,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Checkout />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminOrders />
                     </ProtectedRoute>
                   }
                 />

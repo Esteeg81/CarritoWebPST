@@ -10,6 +10,7 @@ export default defineConfig({
         process.env.TEST_DATABASE_URL ??
         'postgresql://carrito:carrito_dev_pw@localhost:5432/carritowebpst_test',
       JWT_SECRET: 'test-secret-not-for-production-use-only-in-vitest',
+      ADMIN_EMAIL: 'admin@example.com',
     },
     coverage: {
       provider: 'v8',

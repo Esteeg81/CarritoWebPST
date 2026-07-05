@@ -2,20 +2,43 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
+import { api, ApiError } from '../lib/api'
 
 const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
 function Checkout() {
   const { cartItems, totalPrice, clearCart } = useCart()
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [confirmado, setConfirmado] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   if (!user) return null
 
-  const handleConfirmar = () => {
-    clearCart()
-    setConfirmado(true)
+  const handleConfirmar = async () => {
+    setError('')
+    setIsSubmitting(true)
+    try {
+      await api.post(
+        '/api/orders',
+        {
+          items: cartItems.map((item) => ({
+            productId: item.id,
+            cantidad: item.cantidad,
+          })),
+        },
+        token,
+      )
+      clearCart()
+      setConfirmado(true)
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : 'No se pudo confirmar el pedido.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (confirmado) {
@@ -23,9 +46,6 @@ function Checkout() {
       <div className="mx-auto max-w-md rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center">
         <p className="text-lg font-semibold text-emerald-700">
           ¡Gracias, {user.nombre}! Tu pedido fue confirmado.
-        </p>
-        <p className="mt-1 text-sm text-emerald-600">
-          (Simulado — todavía no hay backend ni pagos reales.)
         </p>
         <Link
           to="/"
@@ -69,12 +89,15 @@ function Checkout() {
         <span>{formatPrice(totalPrice)}</span>
       </div>
 
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+
       <button
         type="button"
         onClick={handleConfirmar}
-        className="w-full rounded-md bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        disabled={isSubmitting}
+        className="w-full rounded-md bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
       >
-        Confirmar pedido
+        {isSubmitting ? 'Confirmando...' : 'Confirmar pedido'}
       </button>
     </div>
   )

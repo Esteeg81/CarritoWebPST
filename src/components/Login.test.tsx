@@ -55,7 +55,7 @@ describe('Login', () => {
   it('navega a home con credenciales correctas', async () => {
     vi.mocked(api.post).mockResolvedValueOnce({
       token: 'fake-token',
-      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com' },
+      user: { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', role: 'CUSTOMER' },
     })
     const user = userEvent.setup()
     renderLogin()

@@ -14,6 +14,7 @@ interface AuthResponse {
 
 interface AuthContextValue {
   user: User | null
+  token: string | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
@@ -27,18 +28,22 @@ const TOKEN_KEY = 'carritoweb_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY)
-    if (!token) {
+    const storedToken = localStorage.getItem(TOKEN_KEY)
+    if (!storedToken) {
       setIsLoading(false)
       return
     }
 
     api
-      .get<{ user: User }>('/api/auth/me', token)
-      .then((data) => setUser(data.user))
+      .get<{ user: User }>('/api/auth/me', storedToken)
+      .then((data) => {
+        setUser(data.user)
+        setToken(storedToken)
+      })
       .catch(() => localStorage.removeItem(TOKEN_KEY))
       .finally(() => setIsLoading(false))
   }, [])
@@ -47,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await api.post<AuthResponse>('/api/auth/login', { email, password })
       localStorage.setItem(TOKEN_KEY, data.token)
+      setToken(data.token)
       setUser(data.user)
       return { success: true }
     } catch (err) {
@@ -68,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       })
       localStorage.setItem(TOKEN_KEY, data.token)
+      setToken(data.token)
       setUser(data.user)
       return { success: true }
     } catch (err) {
@@ -79,11 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY)
+    setToken(null)
     setUser(null)
   }
 
   const value: AuthContextValue = {
     user,
+    token,
     isAuthenticated: Boolean(user),
     isLoading,
     login,
