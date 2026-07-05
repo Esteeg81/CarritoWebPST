@@ -99,4 +99,74 @@ describe('POST /api/orders', () => {
 
     expect(res.status).toBe(400)
   })
+
+  it('descuenta el stock real del producto al confirmar el pedido', async () => {
+    const token = await registerAndGetToken('cliente5@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 2 }] })
+
+    expect(res.status).toBe(201)
+
+    const product = await prisma.product.findUnique({ where: { id: 1 } })
+    expect(product?.stock).toBe(3)
+  })
+
+  it('rechaza el pedido si no hay stock suficiente', async () => {
+    const token = await registerAndGetToken('cliente6@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 10 }] })
+
+    expect(res.status).toBe(409)
+
+    const product = await prisma.product.findUnique({ where: { id: 1 } })
+    expect(product?.stock).toBe(5)
+  })
+
+  it('no descuenta stock de ningún ítem si uno de ellos falla', async () => {
+    const token = await registerAndGetToken('cliente7@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        items: [
+          { productId: 1, cantidad: 1 },
+          { productId: 2, cantidad: 10 },
+        ],
+      })
+
+    expect(res.status).toBe(409)
+
+    const auriculares = await prisma.product.findUnique({ where: { id: 1 } })
+    expect(auriculares?.stock).toBe(5)
+  })
+
+  it('previene condiciones de carrera cuando dos pedidos compiten por el último stock', async () => {
+    await prisma.product.update({ where: { id: 1 }, data: { stock: 1 } })
+    const token1 = await registerAndGetToken('race1@example.com')
+    const token2 = await registerAndGetToken('race2@example.com')
+
+    const [res1, res2] = await Promise.all([
+      request(app)
+        .post('/api/orders')
+        .set('Authorization', `Bearer ${token1}`)
+        .send({ items: [{ productId: 1, cantidad: 1 }] }),
+      request(app)
+        .post('/api/orders')
+        .set('Authorization', `Bearer ${token2}`)
+        .send({ items: [{ productId: 1, cantidad: 1 }] }),
+    ])
+
+    const statuses = [res1.status, res2.status].sort()
+    expect(statuses).toEqual([201, 409])
+
+    const product = await prisma.product.findUnique({ where: { id: 1 } })
+    expect(product?.stock).toBe(0)
+  })
 })
