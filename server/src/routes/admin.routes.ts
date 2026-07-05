@@ -51,6 +51,7 @@ const productSchema = z.object({
   imagen: z.string().min(1, 'La imagen es obligatoria.'),
   stock: z.number().int().nonnegative('El stock no puede ser negativo.'),
   categoria: z.string().min(1, 'La categoría es obligatoria.'),
+  destacado: z.boolean().optional().default(false),
 })
 
 const updateProductSchema = productSchema.partial()

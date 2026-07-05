@@ -34,6 +34,7 @@ const product = {
   imagen: 'x.png',
   stock: 5,
   categoria: 'Tech',
+  destacado: false,
 }
 
 beforeEach(() => {
@@ -64,6 +65,7 @@ describe('AdminProducts', () => {
       imagen: 'mate.png',
       stock: 10,
       categoria: 'Hogar',
+      destacado: true,
     })
     const user = userEvent.setup()
     renderAdminProducts()
@@ -74,12 +76,20 @@ describe('AdminProducts', () => {
     await user.type(screen.getByPlaceholderText('Precio'), '4999')
     await user.type(screen.getByPlaceholderText('Stock'), '10')
     await user.type(screen.getByPlaceholderText('URL de imagen'), 'mate.png')
+    await user.click(screen.getByRole('checkbox', { name: /destacado/i }))
     await user.click(screen.getByRole('button', { name: /agregar producto/i }))
 
     expect(await screen.findByText('Mate')).toBeInTheDocument()
     expect(api.post).toHaveBeenCalledWith(
       '/api/admin/products',
-      { nombre: 'Mate', precio: 4999, imagen: 'mate.png', stock: 10, categoria: 'Hogar' },
+      {
+        nombre: 'Mate',
+        precio: 4999,
+        imagen: 'mate.png',
+        stock: 10,
+        categoria: 'Hogar',
+        destacado: true,
+      },
       null,
     )
   })

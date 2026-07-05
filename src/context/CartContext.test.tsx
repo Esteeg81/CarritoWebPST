@@ -16,6 +16,7 @@ const product: Product = {
   stock: 2,
   imagen: 'x.png',
   categoria: 'Tecnología',
+  destacado: false,
 }
 const productBajoStock: Product = { ...product, id: 2, nombre: 'Mate', stock: 1 }
 

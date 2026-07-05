@@ -65,9 +65,29 @@ describe('POST /api/admin/products', () => {
 
     expect(res.status).toBe(201)
     expect(res.body.nombre).toBe('Mate')
+    expect(res.body.destacado).toBe(false)
 
     const listado = await request(app).get('/api/products')
     expect(listado.body).toHaveLength(2)
+  })
+
+  it('crea un producto destacado cuando se lo indica', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .post('/api/admin/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre: 'Mate',
+        precio: 4999,
+        imagen: 'mate.png',
+        stock: 10,
+        categoria: 'Hogar',
+        destacado: true,
+      })
+
+    expect(res.status).toBe(201)
+    expect(res.body.destacado).toBe(true)
   })
 
   it('rechaza un precio negativo', async () => {
@@ -105,6 +125,18 @@ describe('PATCH /api/admin/products/:id', () => {
       .send({ stock: 20 })
 
     expect(res.status).toBe(404)
+  })
+
+  it('marca un producto como destacado', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .patch('/api/admin/products/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ destacado: true })
+
+    expect(res.status).toBe(200)
+    expect(res.body.destacado).toBe(true)
   })
 })
 

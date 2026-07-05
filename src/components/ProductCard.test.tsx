@@ -30,6 +30,7 @@ const product: Product = {
   stock: 5,
   imagen: 'x.png',
   categoria: 'Tecnología',
+  destacado: false,
 }
 const sinStock: Product = { ...product, id: 2, stock: 0 }
 

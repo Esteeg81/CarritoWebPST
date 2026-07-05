@@ -5,6 +5,7 @@ export interface Product {
   imagen: string
   stock: number
   categoria: string
+  destacado: boolean
 }
 
 export interface CartItem extends Product {

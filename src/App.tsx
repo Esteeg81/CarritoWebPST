@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header'
+import ProductCarousel from './components/ProductCarousel'
 import ProductList from './components/ProductList'
 import ProductDetail from './components/ProductDetail'
 import Cart from './components/Cart'
@@ -26,7 +27,15 @@ function App() {
             <Header onCartClick={() => setIsCartOpen(true)} />
             <main className="mx-auto max-w-6xl px-4 py-8">
               <Routes>
-                <Route path="/" element={<ProductList />} />
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <ProductCarousel />
+                      <ProductList />
+                    </>
+                  }
+                />
                 <Route path="/producto/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/registro" element={<Register />} />

@@ -12,6 +12,7 @@ interface ProductFormValues {
   imagen: string
   stock: string
   categoria: string
+  destacado: boolean
 }
 
 const emptyForm: ProductFormValues = {
@@ -20,6 +21,7 @@ const emptyForm: ProductFormValues = {
   imagen: '',
   stock: '',
   categoria: '',
+  destacado: false,
 }
 
 function toPayload(values: ProductFormValues) {
@@ -29,6 +31,7 @@ function toPayload(values: ProductFormValues) {
     imagen: values.imagen,
     stock: Number(values.stock),
     categoria: values.categoria,
+    destacado: values.destacado,
   }
 }
 
@@ -39,6 +42,7 @@ function toFormValues(product: Product): ProductFormValues {
     imagen: product.imagen,
     stock: String(product.stock),
     categoria: product.categoria,
+    destacado: product.destacado,
   }
 }
 
@@ -189,6 +193,17 @@ function AdminProducts() {
             onChange={(e) => setNewProduct({ ...newProduct, imagen: e.target.value })}
             className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
           />
+          <label className="flex items-center gap-2 text-sm text-slate-600 sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={newProduct.destacado}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, destacado: e.target.checked })
+              }
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            Destacado (aparece en el carrusel de la home)
+          </label>
         </div>
         {createError && <p className="mt-2 text-sm text-red-500">{createError}</p>}
         <button
@@ -250,6 +265,17 @@ function AdminProducts() {
                     }
                     className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
                   />
+                  <label className="flex items-center gap-2 text-sm text-slate-600 sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.destacado}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, destacado: e.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    Destacado (aparece en el carrusel de la home)
+                  </label>
                 </div>
                 {editError && <p className="mt-2 text-sm text-red-500">{editError}</p>}
                 <div className="mt-3 flex gap-2">
@@ -273,7 +299,14 @@ function AdminProducts() {
             ) : (
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-medium text-slate-800">{product.nombre}</p>
+                  <p className="font-medium text-slate-800">
+                    {product.nombre}
+                    {product.destacado && (
+                      <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        Destacado
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm text-slate-500">
                     {product.categoria} · {formatPrice(product.precio)} · Stock:{' '}
                     {product.stock}

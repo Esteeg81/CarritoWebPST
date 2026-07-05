@@ -32,6 +32,7 @@ model Product {
   imagen    String
   stock     Int
   categoria String
+  destacado Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
