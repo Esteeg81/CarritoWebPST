@@ -10,6 +10,7 @@ import Checkout from './components/Checkout'
 import AdminLayout from './components/AdminLayout'
 import AdminOrders from './components/AdminOrders'
 import AdminProducts from './components/AdminProducts'
+import AdminCustomers from './components/AdminCustomers'
 import ProtectedRoute from './components/ProtectedRoute'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
@@ -48,6 +49,7 @@ function App() {
                   <Route index element={<Navigate to="pedidos" replace />} />
                   <Route path="pedidos" element={<AdminOrders />} />
                   <Route path="productos" element={<AdminProducts />} />
+                  <Route path="clientes" element={<AdminCustomers />} />
                 </Route>
               </Routes>
             </main>

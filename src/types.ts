@@ -42,3 +42,13 @@ export interface AdminOrder extends Order {
     email: string
   }
 }
+
+export interface Customer {
+  id: number
+  nombre: string
+  email: string
+  role: Role
+  createdAt: string
+  totalPedidos: number
+  totalGastado: number
+}

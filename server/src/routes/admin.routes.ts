@@ -19,6 +19,32 @@ adminRouter.get('/orders', async (_req: Request, res: Response) => {
   res.json(orders)
 })
 
+adminRouter.get('/customers', async (_req: Request, res: Response) => {
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      nombre: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      orders: { select: { total: true } },
+    },
+  })
+
+  const customers = users.map((user) => ({
+    id: user.id,
+    nombre: user.nombre,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+    totalPedidos: user.orders.length,
+    totalGastado: user.orders.reduce((sum, order) => sum + order.total, 0),
+  }))
+
+  res.json(customers)
+})
+
 const productSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio.'),
   precio: z.number().positive('El precio debe ser mayor a 0.'),
