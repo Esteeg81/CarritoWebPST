@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type Request, type Response } from 'express'
 import bcrypt from 'bcrypt'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
@@ -23,7 +23,7 @@ function toSafeUser(user: { id: number; nombre: string; email: string }) {
   return { id: user.id, nombre: user.nombre, email: user.email }
 }
 
-authRouter.post('/register', async (req, res) => {
+authRouter.post('/register', async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body)
   if (!parsed.success) {
     throw new AppError(400, parsed.error.issues[0].message)
@@ -46,7 +46,7 @@ authRouter.post('/register', async (req, res) => {
   res.status(201).json({ token, user: toSafeUser(user) })
 })
 
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', async (req: Request, res: Response) => {
   const parsed = loginSchema.safeParse(req.body)
   if (!parsed.success) {
     throw new AppError(400, parsed.error.issues[0].message)
@@ -69,7 +69,7 @@ authRouter.post('/login', async (req, res) => {
   res.json({ token, user: toSafeUser(user) })
 })
 
-authRouter.get('/me', requireAuth, async (req, res) => {
+authRouter.get('/me', requireAuth, async (req: Request, res: Response) => {
   if (!req.userId) {
     throw new AppError(401, 'No autenticado.')
   }
