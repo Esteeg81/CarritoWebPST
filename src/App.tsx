@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header'
+import Footer from './components/Footer'
+import WhatsAppButton from './components/WhatsAppButton'
 import ProductCarousel from './components/ProductCarousel'
 import ProductList from './components/ProductList'
 import ProductDetail from './components/ProductDetail'
@@ -26,9 +28,9 @@ function App() {
       <CartProvider>
         <ToastProvider>
           <HashRouter>
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex min-h-screen flex-col bg-slate-50">
               <Header onCartClick={() => setIsCartOpen(true)} />
-              <main className="mx-auto max-w-6xl px-4 py-8">
+              <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
                 <Routes>
                   <Route
                     path="/"
@@ -73,7 +75,9 @@ function App() {
                   </Route>
                 </Routes>
               </main>
+              <Footer />
               <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+              <WhatsAppButton />
             </div>
           </HashRouter>
         </ToastProvider>
