@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../app.js'
 import { prisma, syncProductIdSequence } from '../lib/prisma.js'
+import { sendAdminNotification } from '../lib/mailer.js'
+
+vi.mock('../lib/mailer.js', () => ({
+  sendAdminNotification: vi.fn(),
+}))
 
 const app = createApp()
 
 beforeEach(async () => {
+  vi.mocked(sendAdminNotification).mockReset()
   await prisma.product.create({
     data: {
       id: 1,
@@ -137,6 +143,33 @@ describe('PATCH /api/admin/products/:id', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.destacado).toBe(true)
+  })
+
+  it('avisa por mail cuando el stock queda en 0', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .patch('/api/admin/products/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ stock: 0 })
+
+    expect(res.status).toBe(200)
+    expect(sendAdminNotification).toHaveBeenCalledWith(
+      'Producto sin stock',
+      expect.stringContaining('Auriculares'),
+    )
+  })
+
+  it('no avisa por mail si el stock sigue siendo mayor a 0', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .patch('/api/admin/products/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ stock: 3 })
+
+    expect(res.status).toBe(200)
+    expect(sendAdminNotification).not.toHaveBeenCalled()
   })
 })
 

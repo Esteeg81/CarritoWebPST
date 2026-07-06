@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { AppError } from '../lib/errors.js'
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js'
+import { sendAdminNotification } from '../lib/mailer.js'
 
 export const adminRouter = Router()
 
@@ -114,6 +115,14 @@ adminRouter.patch('/products/:id', async (req: Request, res: Response) => {
   }
 
   const product = await prisma.product.update({ where: { id }, data: parsed.data })
+
+  if (existing.stock !== 0 && product.stock === 0) {
+    await sendAdminNotification(
+      'Producto sin stock',
+      `El producto "${product.nombre}" se quedó sin stock.`,
+    )
+  }
+
   res.json(product)
 })
 

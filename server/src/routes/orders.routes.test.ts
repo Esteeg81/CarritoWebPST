@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../app.js'
 import { prisma } from '../lib/prisma.js'
+import { sendAdminNotification } from '../lib/mailer.js'
+
+vi.mock('../lib/mailer.js', () => ({
+  sendAdminNotification: vi.fn(),
+}))
 
 const app = createApp()
 
 beforeEach(async () => {
+  vi.mocked(sendAdminNotification).mockReset()
   await prisma.product.createMany({
     data: [
       {
@@ -62,6 +68,40 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(201)
     expect(res.body.order.total).toBe(2500)
     expect(res.body.order.items).toHaveLength(2)
+    expect(sendAdminNotification).toHaveBeenCalledWith(
+      `Nuevo pedido #${res.body.order.id}`,
+      expect.stringContaining('$2500'),
+    )
+  })
+
+  it('avisa por mail si algún producto se queda sin stock', async () => {
+    const token = await registerAndGetToken('sinstock@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 5 }] })
+
+    expect(res.status).toBe(201)
+    expect(sendAdminNotification).toHaveBeenCalledWith(
+      'Productos sin stock',
+      expect.stringContaining('Auriculares'),
+    )
+  })
+
+  it('no avisa de stock agotado si queda stock disponible', async () => {
+    const token = await registerAndGetToken('conStock@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+
+    expect(res.status).toBe(201)
+    expect(sendAdminNotification).not.toHaveBeenCalledWith(
+      'Productos sin stock',
+      expect.anything(),
+    )
   })
 
   it('ignora el precio que mande el cliente y usa el de la base', async () => {

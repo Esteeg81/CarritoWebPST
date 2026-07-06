@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { AppError } from '../lib/errors.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
+import { sendAdminNotification } from '../lib/mailer.js'
 
 export const ordersRouter = Router()
 
@@ -44,6 +45,8 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const userId = req.userId
   const { items } = parsed.data
 
+  const sinStockProducts: string[] = []
+
   const order = await prisma.$transaction(async (tx) => {
     const orderItemsData = []
 
@@ -67,6 +70,10 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
         )
       }
 
+      if (product.stock - item.cantidad === 0) {
+        sinStockProducts.push(product.nombre)
+      }
+
       orderItemsData.push({
         productId: product.id,
         nombre: product.nombre,
@@ -86,9 +93,24 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
         total,
         items: { create: orderItemsData },
       },
-      include: { items: true },
+      include: {
+        items: true,
+        user: { select: { nombre: true, email: true } },
+      },
     })
   })
+
+  await sendAdminNotification(
+    `Nuevo pedido #${order.id}`,
+    `${order.user.nombre} (${order.user.email}) generó un pedido por un total de $${order.total}.`,
+  )
+
+  if (sinStockProducts.length > 0) {
+    await sendAdminNotification(
+      'Productos sin stock',
+      `Los siguientes productos se quedaron sin stock: ${sinStockProducts.join(', ')}.`,
+    )
+  }
 
   res.status(201).json({ order })
 })

@@ -17,6 +17,8 @@ services:
         value: production
       - key: CORS_ORIGIN
         value: https://esteeg81.github.io
+      - key: RESEND_API_KEY
+        sync: false
 
 databases:
   - name: carritowebpst-db
