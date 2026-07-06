@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
 import { useCart } from '../hooks/useCart'
+import { useToast } from '../hooks/useToast'
 import type { Product } from '../types'
 
 const formatPrice = (value: number) =>
@@ -10,6 +11,7 @@ const formatPrice = (value: number) =>
 function ProductDetail() {
   const { id } = useParams()
   const { addToCart } = useCart()
+  const { showToast } = useToast()
   const [product, setProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -45,6 +47,11 @@ function ProductDetail() {
 
   const sinStock = product.stock === 0
 
+  const handleAddToCart = () => {
+    addToCart(product)
+    showToast(`${product.nombre} agregado al carrito.`)
+  }
+
   return (
     <div className="mx-auto max-w-3xl">
       <Link to="/" className="mb-4 inline-block text-sm text-slate-500 hover:text-slate-700">
@@ -71,7 +78,7 @@ function ProductDetail() {
           <button
             type="button"
             disabled={sinStock}
-            onClick={() => addToCart(product)}
+            onClick={handleAddToCart}
             className="mt-auto rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {sinStock ? 'No disponible' : 'Agregar al carrito'}

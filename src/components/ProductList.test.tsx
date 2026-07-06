@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import ProductList from './ProductList'
 import { CartProvider } from '../context/CartContext'
+import { ToastProvider } from '../context/ToastContext'
 import { api } from '../lib/api'
 import type { Product } from '../types'
 
@@ -14,9 +15,11 @@ vi.mock('../lib/api', () => ({
 function renderList() {
   return render(
     <MemoryRouter>
-      <CartProvider>
-        <ProductList />
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <ProductList />
+        </CartProvider>
+      </ToastProvider>
     </MemoryRouter>,
   )
 }

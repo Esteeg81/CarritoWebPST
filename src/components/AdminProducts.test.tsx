@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import AdminProducts from './AdminProducts'
 import { AuthProvider } from '../context/AuthContext'
+import { ToastProvider } from '../context/ToastContext'
 import { api, ApiError } from '../lib/api'
 
 vi.mock('../lib/api', () => ({
@@ -21,7 +22,9 @@ function renderAdminProducts() {
   return render(
     <MemoryRouter>
       <AuthProvider>
-        <AdminProducts />
+        <ToastProvider>
+          <AdminProducts />
+        </ToastProvider>
       </AuthProvider>
     </MemoryRouter>,
   )
@@ -80,6 +83,9 @@ describe('AdminProducts', () => {
     await user.click(screen.getByRole('button', { name: /agregar producto/i }))
 
     expect(await screen.findByText('Mate')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Mate creado correctamente.'),
+    ).toBeInTheDocument()
     expect(api.post).toHaveBeenCalledWith(
       '/api/admin/products',
       {
@@ -107,6 +113,9 @@ describe('AdminProducts', () => {
     await user.click(screen.getByRole('button', { name: /guardar/i }))
 
     expect(await screen.findByText(/Stock: 20/)).toBeInTheDocument()
+    expect(
+      await screen.findByText('Auriculares actualizado correctamente.'),
+    ).toBeInTheDocument()
   })
 
   it('muestra un error si falla la edición', async () => {
@@ -131,5 +140,20 @@ describe('AdminProducts', () => {
 
     expect(api.delete).toHaveBeenCalledWith('/api/admin/products/1', null)
     expect(screen.queryByText('Auriculares')).not.toBeInTheDocument()
+    expect(await screen.findByText('Auriculares eliminado.')).toBeInTheDocument()
+  })
+
+  it('muestra una notificación de error si falla la eliminación', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([product])
+    vi.mocked(api.delete).mockRejectedValueOnce(new Error('network error'))
+    const user = userEvent.setup()
+    renderAdminProducts()
+
+    await user.click(await screen.findByRole('button', { name: /eliminar/i }))
+
+    expect(
+      await screen.findByText('No se pudo eliminar el producto.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Auriculares')).toBeInTheDocument()
   })
 })

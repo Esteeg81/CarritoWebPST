@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import { api, ApiError } from '../lib/api'
 import type { Product } from '../types'
 
@@ -48,6 +49,7 @@ function toFormValues(product: Product): ProductFormValues {
 
 function AdminProducts() {
   const { token } = useAuth()
+  const { showToast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -84,6 +86,7 @@ function AdminProducts() {
       )
       setProducts((prev) => [...prev, product])
       setNewProduct(emptyForm)
+      showToast(`${product.nombre} creado correctamente.`)
     } catch (err) {
       setCreateError(
         err instanceof ApiError ? err.message : 'No se pudo crear el producto.',
@@ -115,6 +118,7 @@ function AdminProducts() {
       )
       setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)))
       setEditingId(null)
+      showToast(`${updated.nombre} actualizado correctamente.`)
     } catch (err) {
       setEditError(
         err instanceof ApiError ? err.message : 'No se pudo guardar el producto.',
@@ -127,11 +131,13 @@ function AdminProducts() {
   const handleDelete = async (id: number) => {
     if (!window.confirm('¿Seguro que querés eliminar este producto?')) return
 
+    const product = products.find((p) => p.id === id)
     try {
       await api.delete(`/api/admin/products/${id}`, token)
       setProducts((prev) => prev.filter((p) => p.id !== id))
+      showToast(`${product?.nombre ?? 'Producto'} eliminado.`)
     } catch {
-      window.alert('No se pudo eliminar el producto.')
+      showToast('No se pudo eliminar el producto.', 'error')
     }
   }
 

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import ProductCard from './ProductCard'
 import { CartProvider } from '../context/CartContext'
+import { ToastProvider } from '../context/ToastContext'
 import { useCart } from '../hooks/useCart'
 import type { Product } from '../types'
 
@@ -15,10 +16,12 @@ function CartBadge() {
 function renderWithCart(product: Product) {
   return render(
     <MemoryRouter>
-      <CartProvider>
-        <ProductCard product={product} />
-        <CartBadge />
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <ProductCard product={product} />
+          <CartBadge />
+        </CartProvider>
+      </ToastProvider>
     </MemoryRouter>,
   )
 }
@@ -49,6 +52,9 @@ describe('ProductCard', () => {
     await user.click(screen.getByRole('button', { name: /agregar al carrito/i }))
 
     expect(screen.getByTestId('total-items')).toHaveTextContent('1')
+    expect(
+      await screen.findByText('Auriculares Bluetooth agregado al carrito.'),
+    ).toBeInTheDocument()
   })
 
   it('deshabilita el botón y muestra "No disponible" sin stock', () => {

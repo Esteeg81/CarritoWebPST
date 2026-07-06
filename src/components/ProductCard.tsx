@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
+import { useToast } from '../hooks/useToast'
 import type { Product } from '../types'
 
 const formatPrice = (value: number) =>
@@ -11,7 +12,13 @@ interface ProductCardProps {
 
 function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
+  const { showToast } = useToast()
   const sinStock = product.stock === 0
+
+  const handleAddToCart = () => {
+    addToCart(product)
+    showToast(`${product.nombre} agregado al carrito.`)
+  }
 
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -38,7 +45,7 @@ function ProductCard({ product }: ProductCardProps) {
         <button
           type="button"
           disabled={sinStock}
-          onClick={() => addToCart(product)}
+          onClick={handleAddToCart}
           className="mt-auto rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {sinStock ? 'No disponible' : 'Agregar al carrito'}

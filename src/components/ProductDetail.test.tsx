@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import ProductDetail from './ProductDetail'
 import { CartProvider } from '../context/CartContext'
+import { ToastProvider } from '../context/ToastContext'
 import { api, ApiError } from '../lib/api'
 
 vi.mock('../lib/api', () => ({
@@ -19,11 +21,13 @@ vi.mock('../lib/api', () => ({
 function renderDetail(id: string) {
   return render(
     <MemoryRouter initialEntries={[`/producto/${id}`]}>
-      <CartProvider>
-        <Routes>
-          <Route path="/producto/:id" element={<ProductDetail />} />
-        </Routes>
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <Routes>
+            <Route path="/producto/:id" element={<ProductDetail />} />
+          </Routes>
+        </CartProvider>
+      </ToastProvider>
     </MemoryRouter>,
   )
 }
@@ -57,6 +61,26 @@ describe('ProductDetail', () => {
 
     expect(
       await screen.findByText(/no encontramos ese producto/i),
+    ).toBeInTheDocument()
+  })
+
+  it('muestra una notificación al agregar al carrito', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      id: 1,
+      nombre: 'Auriculares',
+      precio: 1000,
+      imagen: 'x.png',
+      stock: 5,
+      categoria: 'Tech',
+    })
+    const user = userEvent.setup()
+
+    renderDetail('1')
+
+    await user.click(await screen.findByRole('button', { name: /agregar al carrito/i }))
+
+    expect(
+      await screen.findByText('Auriculares agregado al carrito.'),
     ).toBeInTheDocument()
   })
 })

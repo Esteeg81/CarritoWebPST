@@ -15,6 +15,7 @@ import AdminCustomers from './components/AdminCustomers'
 import ProtectedRoute from './components/ProtectedRoute'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -22,49 +23,51 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <HashRouter>
-          <div className="min-h-screen bg-slate-50">
-            <Header onCartClick={() => setIsCartOpen(true)} />
-            <main className="mx-auto max-w-6xl px-4 py-8">
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <>
-                      <ProductCarousel />
-                      <ProductList />
-                    </>
-                  }
-                />
-                <Route path="/producto/:id" element={<ProductDetail />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/registro" element={<Register />} />
-                <Route
-                  path="/checkout"
-                  element={
-                    <ProtectedRoute>
-                      <Checkout />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <AdminLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="pedidos" replace />} />
-                  <Route path="pedidos" element={<AdminOrders />} />
-                  <Route path="productos" element={<AdminProducts />} />
-                  <Route path="clientes" element={<AdminCustomers />} />
-                </Route>
-              </Routes>
-            </main>
-            <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-          </div>
-        </HashRouter>
+        <ToastProvider>
+          <HashRouter>
+            <div className="min-h-screen bg-slate-50">
+              <Header onCartClick={() => setIsCartOpen(true)} />
+              <main className="mx-auto max-w-6xl px-4 py-8">
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <>
+                        <ProductCarousel />
+                        <ProductList />
+                      </>
+                    }
+                  />
+                  <Route path="/producto/:id" element={<ProductDetail />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/registro" element={<Register />} />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <ProtectedRoute>
+                        <Checkout />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <AdminLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="pedidos" replace />} />
+                    <Route path="pedidos" element={<AdminOrders />} />
+                    <Route path="productos" element={<AdminProducts />} />
+                    <Route path="clientes" element={<AdminCustomers />} />
+                  </Route>
+                </Routes>
+              </main>
+              <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+            </div>
+          </HashRouter>
+        </ToastProvider>
       </CartProvider>
     </AuthProvider>
   )
