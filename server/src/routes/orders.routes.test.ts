@@ -170,3 +170,55 @@ describe('POST /api/orders', () => {
     expect(product?.stock).toBe(0)
   })
 })
+
+describe('GET /api/orders/me', () => {
+  it('rechaza sin autenticación', async () => {
+    const res = await request(app).get('/api/orders/me')
+
+    expect(res.status).toBe(401)
+  })
+
+  it('devuelve solo los pedidos del usuario autenticado', async () => {
+    const tokenA = await registerAndGetToken('miscompras@example.com')
+    const tokenB = await registerAndGetToken('otrocliente@example.com')
+
+    await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+    await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${tokenB}`)
+      .send({ items: [{ productId: 2, cantidad: 1 }] })
+
+    const res = await request(app)
+      .get('/api/orders/me')
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(1)
+    expect(res.body[0].items[0].nombre).toBe('Auriculares')
+  })
+
+  it('devuelve los pedidos ordenados del más reciente al más antiguo', async () => {
+    const token = await registerAndGetToken('variospedidos@example.com')
+
+    const first = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+    const second = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 2, cantidad: 1 }] })
+
+    const res = await request(app)
+      .get('/api/orders/me')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(2)
+    expect(res.body[0].id).toBe(second.body.order.id)
+    expect(res.body[1].id).toBe(first.body.order.id)
+  })
+})

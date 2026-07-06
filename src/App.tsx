@@ -8,6 +8,7 @@ import Cart from './components/Cart'
 import Login from './components/Login'
 import Register from './components/Register'
 import Checkout from './components/Checkout'
+import MyOrders from './components/MyOrders'
 import AdminLayout from './components/AdminLayout'
 import AdminOrders from './components/AdminOrders'
 import AdminProducts from './components/AdminProducts'
@@ -46,6 +47,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Checkout />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/mis-pedidos"
+                    element={
+                      <ProtectedRoute>
+                        <MyOrders />
                       </ProtectedRoute>
                     }
                   />

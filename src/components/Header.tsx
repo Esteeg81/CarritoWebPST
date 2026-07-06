@@ -21,6 +21,12 @@ function Header({ onCartClick }: HeaderProps) {
           {user ? (
             <div className="flex items-center gap-2 text-sm">
               <span className="hidden sm:inline">Hola, {user.nombre}</span>
+              <Link
+                to="/mis-pedidos"
+                className="rounded-full bg-slate-700 px-3 py-1.5 font-medium transition-colors hover:bg-slate-600"
+              >
+                Mis pedidos
+              </Link>
               {user.role === 'ADMIN' && (
                 <Link
                   to="/admin"

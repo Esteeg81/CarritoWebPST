@@ -17,6 +17,20 @@ const createOrderSchema = z.object({
     .min(1, 'El pedido no puede estar vacío.'),
 })
 
+ordersRouter.get('/me', requireAuth, async (req: Request, res: Response) => {
+  if (!req.userId) {
+    throw new AppError(401, 'No autenticado.')
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { userId: req.userId },
+    include: { items: true },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  res.json(orders)
+})
+
 ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   if (!req.userId) {
     throw new AppError(401, 'No autenticado.')
