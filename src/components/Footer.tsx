@@ -1,5 +1,5 @@
 const SOCIAL_LINKS = [
-  { name: 'Instagram', url: 'https://instagram.com/carritoweb' },
+  { name: 'Instagram', url: 'https://www.instagram.com/pablo.steegapp' },
   { name: 'Facebook', url: 'https://facebook.com/carritoweb' },
 ]
 
