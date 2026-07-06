@@ -3,15 +3,21 @@ import request from 'supertest'
 import { createApp } from '../app.js'
 import { prisma } from '../lib/prisma.js'
 import { sendAdminNotification } from '../lib/mailer.js'
+import { sendAdminWhatsApp } from '../lib/whatsapp.js'
 
 vi.mock('../lib/mailer.js', () => ({
   sendAdminNotification: vi.fn(),
+}))
+
+vi.mock('../lib/whatsapp.js', () => ({
+  sendAdminWhatsApp: vi.fn(),
 }))
 
 const app = createApp()
 
 beforeEach(async () => {
   vi.mocked(sendAdminNotification).mockReset()
+  vi.mocked(sendAdminWhatsApp).mockReset()
   await prisma.product.createMany({
     data: [
       {
@@ -72,9 +78,12 @@ describe('POST /api/orders', () => {
       `Nuevo pedido #${res.body.order.id}`,
       expect.stringContaining('$2500'),
     )
+    expect(sendAdminWhatsApp).toHaveBeenCalledWith(
+      expect.stringContaining(`Nuevo pedido #${res.body.order.id}`),
+    )
   })
 
-  it('avisa por mail si algún producto se queda sin stock', async () => {
+  it('avisa por mail y whatsapp si algún producto se queda sin stock', async () => {
     const token = await registerAndGetToken('sinstock@example.com')
 
     const res = await request(app)
@@ -87,6 +96,7 @@ describe('POST /api/orders', () => {
       'Productos sin stock',
       expect.stringContaining('Auriculares'),
     )
+    expect(sendAdminWhatsApp).toHaveBeenCalledWith(expect.stringContaining('Auriculares'))
   })
 
   it('no avisa de stock agotado si queda stock disponible', async () => {
@@ -102,6 +112,7 @@ describe('POST /api/orders', () => {
       'Productos sin stock',
       expect.anything(),
     )
+    expect(sendAdminWhatsApp).toHaveBeenCalledTimes(1)
   })
 
   it('ignora el precio que mande el cliente y usa el de la base', async () => {

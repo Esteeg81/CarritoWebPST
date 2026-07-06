@@ -8,6 +8,8 @@ const envSchema = z.object({
   ADMIN_EMAIL: z.string().email().optional(),
   CORS_ORIGIN: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
+  CALLMEBOT_API_KEY: z.string().optional(),
+  WHATSAPP_ADMIN_PHONE: z.string().optional(),
 })
 
 export const env = envSchema.parse(process.env)

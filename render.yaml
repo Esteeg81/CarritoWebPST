@@ -19,6 +19,10 @@ services:
         value: https://esteeg81.github.io
       - key: RESEND_API_KEY
         sync: false
+      - key: CALLMEBOT_API_KEY
+        sync: false
+      - key: WHATSAPP_ADMIN_PHONE
+        sync: false
 
 databases:
   - name: carritowebpst-db

@@ -3,15 +3,21 @@ import request from 'supertest'
 import { createApp } from '../app.js'
 import { prisma, syncProductIdSequence } from '../lib/prisma.js'
 import { sendAdminNotification } from '../lib/mailer.js'
+import { sendAdminWhatsApp } from '../lib/whatsapp.js'
 
 vi.mock('../lib/mailer.js', () => ({
   sendAdminNotification: vi.fn(),
+}))
+
+vi.mock('../lib/whatsapp.js', () => ({
+  sendAdminWhatsApp: vi.fn(),
 }))
 
 const app = createApp()
 
 beforeEach(async () => {
   vi.mocked(sendAdminNotification).mockReset()
+  vi.mocked(sendAdminWhatsApp).mockReset()
   await prisma.product.create({
     data: {
       id: 1,
@@ -145,7 +151,7 @@ describe('PATCH /api/admin/products/:id', () => {
     expect(res.body.destacado).toBe(true)
   })
 
-  it('avisa por mail cuando el stock queda en 0', async () => {
+  it('avisa por mail y whatsapp cuando el stock queda en 0', async () => {
     const token = await getAdminToken()
 
     const res = await request(app)
@@ -158,9 +164,10 @@ describe('PATCH /api/admin/products/:id', () => {
       'Producto sin stock',
       expect.stringContaining('Auriculares'),
     )
+    expect(sendAdminWhatsApp).toHaveBeenCalledWith(expect.stringContaining('Auriculares'))
   })
 
-  it('no avisa por mail si el stock sigue siendo mayor a 0', async () => {
+  it('no avisa por mail ni whatsapp si el stock sigue siendo mayor a 0', async () => {
     const token = await getAdminToken()
 
     const res = await request(app)
@@ -170,6 +177,7 @@ describe('PATCH /api/admin/products/:id', () => {
 
     expect(res.status).toBe(200)
     expect(sendAdminNotification).not.toHaveBeenCalled()
+    expect(sendAdminWhatsApp).not.toHaveBeenCalled()
   })
 })
 

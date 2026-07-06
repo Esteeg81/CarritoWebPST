@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js'
 import { AppError } from '../lib/errors.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import { sendAdminNotification } from '../lib/mailer.js'
+import { sendAdminWhatsApp } from '../lib/whatsapp.js'
 
 export const ordersRouter = Router()
 
@@ -100,16 +101,14 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
     })
   })
 
-  await sendAdminNotification(
-    `Nuevo pedido #${order.id}`,
-    `${order.user.nombre} (${order.user.email}) generó un pedido por un total de $${order.total}.`,
-  )
+  const nuevoPedidoMsg = `${order.user.nombre} (${order.user.email}) generó un pedido por un total de $${order.total}.`
+  await sendAdminNotification(`Nuevo pedido #${order.id}`, nuevoPedidoMsg)
+  await sendAdminWhatsApp(`Nuevo pedido #${order.id}: ${nuevoPedidoMsg}`)
 
   if (sinStockProducts.length > 0) {
-    await sendAdminNotification(
-      'Productos sin stock',
-      `Los siguientes productos se quedaron sin stock: ${sinStockProducts.join(', ')}.`,
-    )
+    const sinStockMsg = `Los siguientes productos se quedaron sin stock: ${sinStockProducts.join(', ')}.`
+    await sendAdminNotification('Productos sin stock', sinStockMsg)
+    await sendAdminWhatsApp(sinStockMsg)
   }
 
   res.status(201).json({ order })
