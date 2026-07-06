@@ -82,6 +82,11 @@ describe('POST /api/orders', () => {
     expect(sendAdminWhatsApp).toHaveBeenCalledWith(
       expect.stringContaining(`Nuevo pedido #${res.body.order.id}`),
     )
+    const whatsappMsg = vi.mocked(sendAdminWhatsApp).mock.calls[0][0]
+    expect(whatsappMsg).toContain('5491122334455')
+    expect(whatsappMsg).toContain('Auriculares x2: $2000')
+    expect(whatsappMsg).toContain('Mochila x1: $500')
+    expect(whatsappMsg).toContain('Total: $2500')
   })
 
   it('avisa por mail y whatsapp si algún producto se queda sin stock', async () => {

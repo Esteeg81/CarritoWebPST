@@ -96,14 +96,25 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
       },
       include: {
         items: true,
-        user: { select: { nombre: true, email: true } },
+        user: { select: { nombre: true, email: true, telefono: true } },
       },
     })
   })
 
   const nuevoPedidoMsg = `${order.user.nombre} (${order.user.email}) generó un pedido por un total de $${order.total}.`
   await sendAdminNotification(`Nuevo pedido #${order.id}`, nuevoPedidoMsg)
-  await sendAdminWhatsApp(`Nuevo pedido #${order.id}: ${nuevoPedidoMsg}`)
+
+  const itemsList = order.items
+    .map((item) => `- ${item.nombre} x${item.cantidad}: $${item.precio * item.cantidad}`)
+    .join('\n')
+  const whatsappMsg = [
+    `Nuevo pedido #${order.id}`,
+    `Cliente: ${order.user.nombre}`,
+    `Teléfono: ${order.user.telefono}`,
+    itemsList,
+    `Total: $${order.total}`,
+  ].join('\n')
+  await sendAdminWhatsApp(whatsappMsg)
 
   if (sinStockProducts.length > 0) {
     const sinStockMsg = `Los siguientes productos se quedaron sin stock: ${sinStockProducts.join(', ')}.`
