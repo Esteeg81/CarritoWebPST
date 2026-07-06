@@ -140,3 +140,31 @@ adminRouter.delete('/products/:id', async (req: Request, res: Response) => {
   await prisma.product.delete({ where: { id } })
   res.status(204).send()
 })
+
+const hexColor = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Los colores deben ser un código hexadecimal, ej: #1e293b.')
+
+const settingsSchema = z
+  .object({
+    fontFamily: z.string().min(1, 'La tipografía es obligatoria.'),
+    textColor: hexColor,
+    headerBg: hexColor,
+    footerBg: hexColor,
+    mainBg: hexColor,
+  })
+  .partial()
+
+adminRouter.patch('/settings', async (req: Request, res: Response) => {
+  const parsed = settingsSchema.safeParse(req.body)
+  if (!parsed.success) {
+    throw new AppError(400, parsed.error.issues[0].message)
+  }
+
+  const settings = await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    update: parsed.data,
+    create: { id: 1, ...parsed.data },
+  })
+  res.json(settings)
+})

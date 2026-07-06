@@ -56,3 +56,11 @@ export interface Customer {
   totalPedidos: number
   totalGastado: number
 }
+
+export interface SiteSettings {
+  fontFamily: string
+  textColor: string
+  headerBg: string
+  footerBg: string
+  mainBg: string
+}

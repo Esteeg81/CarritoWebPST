@@ -6,4 +6,5 @@ afterEach(async () => {
   await prisma.order.deleteMany()
   await prisma.user.deleteMany()
   await prisma.product.deleteMany()
+  await prisma.siteSettings.deleteMany()
 })

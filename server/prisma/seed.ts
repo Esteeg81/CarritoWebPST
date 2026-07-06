@@ -60,6 +60,13 @@ async function main() {
     })
   }
 
+  console.log('Sembrando configuración del sitio...')
+  await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1 },
+  })
+
   console.log('Listo.')
 }
 

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/useTheme'
 
 interface HeaderProps {
   onCartClick: () => void
@@ -9,9 +10,13 @@ interface HeaderProps {
 function Header({ onCartClick }: HeaderProps) {
   const { totalItems } = useCart()
   const { user, logout } = useAuth()
+  const { settings } = useTheme()
 
   return (
-    <header className="bg-slate-900 text-white shadow-md">
+    <header
+      className="text-white shadow-md"
+      style={{ backgroundColor: settings.headerBg }}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link to="/" className="text-xl font-bold tracking-tight">
           🛒 Carrito Web

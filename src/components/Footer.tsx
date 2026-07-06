@@ -1,11 +1,18 @@
+import { useTheme } from '../hooks/useTheme'
+
 const SOCIAL_LINKS = [
   { name: 'Instagram', url: 'https://www.instagram.com/pablo.steegapp' },
   { name: 'Facebook', url: 'https://facebook.com/carritoweb' },
 ]
 
 function Footer() {
+  const { settings } = useTheme()
+
   return (
-    <footer className="mt-auto border-t border-slate-200 bg-white py-6">
+    <footer
+      className="mt-auto border-t border-slate-200 py-6"
+      style={{ backgroundColor: settings.footerBg }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-sm text-slate-500 sm:flex-row sm:justify-between">
         <span>© {new Date().getFullYear()} Carrito Web</span>
         <div className="flex gap-4">

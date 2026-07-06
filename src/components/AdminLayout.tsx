@@ -18,6 +18,9 @@ function AdminLayout() {
         <NavLink to="/admin/clientes" className={tabClass}>
           Clientes
         </NavLink>
+        <NavLink to="/admin/configuracion" className={tabClass}>
+          Configuración
+        </NavLink>
       </nav>
       <Outlet />
     </div>

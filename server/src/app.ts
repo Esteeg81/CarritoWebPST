@@ -4,6 +4,7 @@ import { authRouter } from './routes/auth.routes.js'
 import { productsRouter } from './routes/products.routes.js'
 import { ordersRouter } from './routes/orders.routes.js'
 import { adminRouter } from './routes/admin.routes.js'
+import { settingsRouter } from './routes/settings.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { AppError } from './lib/errors.js'
 import { env } from './lib/env.js'
@@ -38,6 +39,7 @@ export function createApp() {
   app.use('/api/auth', authRouter)
   app.use('/api/products', productsRouter)
   app.use('/api/orders', ordersRouter)
+  app.use('/api/settings', settingsRouter)
   app.use('/api/admin', adminRouter)
 
   app.use(errorHandler)
