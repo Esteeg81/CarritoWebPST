@@ -84,12 +84,21 @@ function AdminProducts() {
     setIsLoading(true)
     api
       .get<Product[]>('/api/products')
-      .then(setProducts)
+      .then((loaded) => {
+        setProducts(loaded)
+        const sinStock = loaded.filter((p) => p.stock === 0)
+        if (sinStock.length > 0) {
+          showToast(
+            `Sin stock: ${sinStock.map((p) => p.nombre).join(', ')}.`,
+            'error',
+          )
+        }
+      })
       .catch(() => setError('No se pudieron cargar los productos.'))
       .finally(() => setIsLoading(false))
   }
 
-  useEffect(loadProducts, [])
+  useEffect(loadProducts, [showToast])
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -136,6 +145,9 @@ function AdminProducts() {
       setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)))
       setEditingId(null)
       showToast(`${updated.nombre} actualizado correctamente.`)
+      if (updated.stock === 0) {
+        showToast(`${updated.nombre} se quedó sin stock.`, 'error')
+      }
     } catch (err) {
       setEditError(
         err instanceof ApiError ? err.message : 'No se pudo guardar el producto.',
@@ -357,6 +369,11 @@ function AdminProducts() {
                     {product.destacado && (
                       <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                         Destacado
+                      </span>
+                    )}
+                    {product.stock === 0 && (
+                      <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                        Sin stock
                       </span>
                     )}
                   </p>

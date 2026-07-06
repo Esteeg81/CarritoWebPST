@@ -200,4 +200,30 @@ describe('AdminProducts', () => {
       await screen.findByText(/no se encontraron productos con esos filtros/i),
     ).toBeInTheDocument()
   })
+
+  it('notifica y marca los productos sin stock al cargar la lista', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([{ ...product, stock: 0 }])
+
+    renderAdminProducts()
+
+    expect(await screen.findByText('Sin stock: Auriculares.')).toBeInTheDocument()
+    expect(screen.getByText('Sin stock')).toBeInTheDocument()
+  })
+
+  it('avisa cuando un producto se queda sin stock tras editar', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([product])
+    vi.mocked(api.patch).mockResolvedValueOnce({ ...product, stock: 0 })
+    const user = userEvent.setup()
+    renderAdminProducts()
+
+    await user.click(await screen.findByRole('button', { name: /editar/i }))
+    const stockInput = screen.getByDisplayValue('5')
+    await user.clear(stockInput)
+    await user.type(stockInput, '0')
+    await user.click(screen.getByRole('button', { name: /guardar/i }))
+
+    expect(
+      await screen.findByText('Auriculares se quedó sin stock.'),
+    ).toBeInTheDocument()
+  })
 })
