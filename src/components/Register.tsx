@@ -2,9 +2,12 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
+const TELEFONO_PATTERN = /^\d{8,15}$/
+
 function Register() {
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
+  const [telefono, setTelefono] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -24,9 +27,13 @@ function Register() {
       setError('La contraseña debe tener al menos 4 caracteres.')
       return
     }
+    if (!TELEFONO_PATTERN.test(telefono)) {
+      setError('El teléfono debe tener entre 8 y 15 dígitos, con código de país.')
+      return
+    }
 
     setIsSubmitting(true)
-    const result = await register(nombre, email, password)
+    const result = await register(nombre, email, telefono, password)
     setIsSubmitting(false)
 
     if (result.success) {
@@ -63,6 +70,20 @@ function Register() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="telefono" className="text-sm font-medium text-slate-600">
+            Teléfono
+          </label>
+          <input
+            id="telefono"
+            type="tel"
+            required
+            placeholder="Con código de país, ej: 5491122334455"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
             className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
           />
         </div>

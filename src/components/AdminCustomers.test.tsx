@@ -31,6 +31,7 @@ describe('AdminCustomers', () => {
         id: 1,
         nombre: 'Cliente Uno',
         email: 'cliente@example.com',
+        telefono: '5491122334455',
         role: 'CUSTOMER',
         createdAt: '2026-01-01T00:00:00.000Z',
         totalPedidos: 2,
@@ -42,6 +43,7 @@ describe('AdminCustomers', () => {
 
     expect(await screen.findByText('Cliente Uno')).toBeInTheDocument()
     expect(screen.getByText('2 pedidos')).toBeInTheDocument()
+    expect(screen.getByText('5491122334455')).toBeInTheDocument()
   })
 
   it('marca a los administradores con una etiqueta', async () => {
@@ -50,6 +52,7 @@ describe('AdminCustomers', () => {
         id: 2,
         nombre: 'Dueño',
         email: 'admin@example.com',
+        telefono: '5491122334455',
         role: 'ADMIN',
         createdAt: '2026-01-01T00:00:00.000Z',
         totalPedidos: 0,
@@ -82,12 +85,13 @@ describe('AdminCustomers', () => {
     ).toBeInTheDocument()
   })
 
-  it('filtra clientes por nombre o email', async () => {
+  it('filtra clientes por nombre, email o teléfono', async () => {
     vi.mocked(api.get).mockResolvedValueOnce([
       {
         id: 1,
         nombre: 'Cliente Uno',
         email: 'uno@example.com',
+        telefono: '5491122334455',
         role: 'CUSTOMER',
         createdAt: '2026-01-01T00:00:00.000Z',
         totalPedidos: 2,
@@ -97,6 +101,7 @@ describe('AdminCustomers', () => {
         id: 2,
         nombre: 'Cliente Dos',
         email: 'dos@example.com',
+        telefono: '5493425112970',
         role: 'CUSTOMER',
         createdAt: '2026-01-01T00:00:00.000Z',
         totalPedidos: 0,
@@ -108,8 +113,44 @@ describe('AdminCustomers', () => {
 
     await screen.findByText('Cliente Uno')
     await user.type(
-      screen.getByPlaceholderText('Buscar por nombre o email...'),
+      screen.getByPlaceholderText('Buscar por nombre, email o teléfono...'),
       'dos@example',
+    )
+
+    expect(screen.queryByText('Cliente Uno')).not.toBeInTheDocument()
+    expect(screen.getByText('Cliente Dos')).toBeInTheDocument()
+  })
+
+  it('filtra clientes por teléfono', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        nombre: 'Cliente Uno',
+        email: 'uno@example.com',
+        telefono: '5491122334455',
+        role: 'CUSTOMER',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        totalPedidos: 2,
+        totalGastado: 3000,
+      },
+      {
+        id: 2,
+        nombre: 'Cliente Dos',
+        email: 'dos@example.com',
+        telefono: '5493425112970',
+        role: 'CUSTOMER',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        totalPedidos: 0,
+        totalGastado: 0,
+      },
+    ])
+    const user = userEvent.setup()
+    renderAdminCustomers()
+
+    await screen.findByText('Cliente Uno')
+    await user.type(
+      screen.getByPlaceholderText('Buscar por nombre, email o teléfono...'),
+      '3425112970',
     )
 
     expect(screen.queryByText('Cliente Uno')).not.toBeInTheDocument()
@@ -122,6 +163,7 @@ describe('AdminCustomers', () => {
         id: 1,
         nombre: 'Cliente Uno',
         email: 'uno@example.com',
+        telefono: '5491122334455',
         role: 'CUSTOMER',
         createdAt: '2026-01-01T00:00:00.000Z',
         totalPedidos: 2,
@@ -133,7 +175,7 @@ describe('AdminCustomers', () => {
 
     await screen.findByText('Cliente Uno')
     await user.type(
-      screen.getByPlaceholderText('Buscar por nombre o email...'),
+      screen.getByPlaceholderText('Buscar por nombre, email o teléfono...'),
       'inexistente',
     )
 

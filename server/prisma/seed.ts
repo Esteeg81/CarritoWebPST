@@ -40,8 +40,8 @@ async function main() {
   console.log('Sembrando usuarios de prueba...')
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase()
   const mockUsers = [
-    { nombre: 'Juan Pérez', email: 'juan@example.com', password: '1234' },
-    { nombre: 'Ana Gómez', email: 'ana@example.com', password: 'abcd' },
+    { nombre: 'Juan Pérez', email: 'juan@example.com', telefono: '5491122334455', password: '1234' },
+    { nombre: 'Ana Gómez', email: 'ana@example.com', telefono: '5491133445566', password: 'abcd' },
   ]
   for (const u of mockUsers) {
     const passwordHash = await bcrypt.hash(u.password, 10)
@@ -49,7 +49,7 @@ async function main() {
     await prisma.user.upsert({
       where: { email: u.email },
       update: { role },
-      create: { nombre: u.nombre, email: u.email, passwordHash, role },
+      create: { nombre: u.nombre, email: u.email, telefono: u.telefono, passwordHash, role },
     })
   }
 

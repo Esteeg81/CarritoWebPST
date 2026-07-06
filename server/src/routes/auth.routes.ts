@@ -13,6 +13,9 @@ export const authRouter = Router()
 const registerSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio.'),
   email: z.string().email('Email inválido.'),
+  telefono: z
+    .string()
+    .regex(/^\d{8,15}$/, 'El teléfono debe tener entre 8 y 15 dígitos, con código de país.'),
   password: z.string().min(4, 'La contraseña debe tener al menos 4 caracteres.'),
 })
 
@@ -25,8 +28,20 @@ function isAdminEmail(email: string) {
   return Boolean(env.ADMIN_EMAIL && email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase())
 }
 
-function toSafeUser(user: { id: number; nombre: string; email: string; role: Role }) {
-  return { id: user.id, nombre: user.nombre, email: user.email, role: user.role }
+function toSafeUser(user: {
+  id: number
+  nombre: string
+  email: string
+  telefono: string
+  role: Role
+}) {
+  return {
+    id: user.id,
+    nombre: user.nombre,
+    email: user.email,
+    telefono: user.telefono,
+    role: user.role,
+  }
 }
 
 authRouter.post('/register', async (req: Request, res: Response) => {
@@ -34,7 +49,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   if (!parsed.success) {
     throw new AppError(400, parsed.error.issues[0].message)
   }
-  const { nombre, email, password } = parsed.data
+  const { nombre, email, telefono, password } = parsed.data
 
   const existing = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
@@ -48,6 +63,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     data: {
       nombre,
       email: email.toLowerCase(),
+      telefono,
       passwordHash,
       role: isAdminEmail(email) ? 'ADMIN' : 'CUSTOMER',
     },

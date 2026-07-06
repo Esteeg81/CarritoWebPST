@@ -8,6 +8,7 @@ async function getAdminToken() {
   const res = await request(app).post('/api/auth/register').send({
     nombre: 'Dueño',
     email: 'admin@example.com',
+    telefono: '5491122334455',
     password: '1234',
   })
   return res.body.token as string
@@ -17,6 +18,7 @@ async function getCustomerToken() {
   const res = await request(app).post('/api/auth/register').send({
     nombre: 'Cliente',
     email: 'cliente@example.com',
+    telefono: '5491122334455',
     password: '1234',
   })
   return res.body.token as string

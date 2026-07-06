@@ -20,7 +20,13 @@ const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 )
 
-const mockUser = { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', role: 'CUSTOMER' }
+const mockUser = {
+  id: 1,
+  nombre: 'Juan Pérez',
+  email: 'juan@example.com',
+  telefono: '5491122334455',
+  role: 'CUSTOMER',
+}
 
 beforeEach(() => {
   vi.mocked(api.get).mockReset()
@@ -74,7 +80,12 @@ describe('AuthContext', () => {
   })
 
   it('register exitoso guarda la sesión', async () => {
-    const newUser = { id: 2, nombre: 'Nuevo', email: 'nuevo@example.com' }
+    const newUser = {
+      id: 2,
+      nombre: 'Nuevo',
+      email: 'nuevo@example.com',
+      telefono: '5491122334455',
+    }
     vi.mocked(api.post).mockResolvedValueOnce({ token: 'fake-token-2', user: newUser })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -82,7 +93,12 @@ describe('AuthContext', () => {
 
     let response
     await act(async () => {
-      response = await result.current.register('Nuevo', 'nuevo@example.com', '1234')
+      response = await result.current.register(
+        'Nuevo',
+        'nuevo@example.com',
+        '5491122334455',
+        '1234',
+      )
     })
 
     expect(response).toEqual({ success: true })
@@ -99,7 +115,12 @@ describe('AuthContext', () => {
 
     let response
     await act(async () => {
-      response = await result.current.register('Otro', 'juan@example.com', '1234')
+      response = await result.current.register(
+        'Otro',
+        'juan@example.com',
+        '5491122334455',
+        '1234',
+      )
     })
 
     expect(response).toEqual({

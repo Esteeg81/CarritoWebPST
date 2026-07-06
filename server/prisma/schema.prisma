@@ -27,6 +27,7 @@ model User {
   id           Int      @id @default(autoincrement())
   nombre       String
   email        String   @unique
+  telefono     String   @default("")
   passwordHash String
   role         Role     @default(CUSTOMER)
   createdAt    DateTime @default(now())

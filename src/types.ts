@@ -18,6 +18,7 @@ export interface User {
   id: number
   nombre: string
   email: string
+  telefono: string
   role: Role
 }
 
@@ -51,6 +52,7 @@ export interface Customer {
   id: number
   nombre: string
   email: string
+  telefono: string
   role: Role
   createdAt: string
   totalPedidos: number

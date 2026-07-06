@@ -18,7 +18,12 @@ interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
-  register: (nombre: string, email: string, password: string) => Promise<AuthResult>
+  register: (
+    nombre: string,
+    email: string,
+    telefono: string,
+    password: string,
+  ) => Promise<AuthResult>
   logout: () => void
 }
 
@@ -65,12 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (
     nombre: string,
     email: string,
+    telefono: string,
     password: string,
   ): Promise<AuthResult> => {
     try {
       const data = await api.post<AuthResponse>('/api/auth/register', {
         nombre,
         email,
+        telefono,
         password,
       })
       localStorage.setItem(TOKEN_KEY, data.token)

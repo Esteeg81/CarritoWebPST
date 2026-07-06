@@ -22,6 +22,7 @@ async function registerAndGetToken(email: string, nombre = 'Test User') {
   const res = await request(app).post('/api/auth/register').send({
     nombre,
     email,
+    telefono: '5491122334455',
     password: '1234',
   })
   return res.body.token as string

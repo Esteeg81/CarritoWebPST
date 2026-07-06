@@ -27,7 +27,8 @@ function AdminCustomers() {
     return customers.filter(
       (customer) =>
         customer.nombre.toLowerCase().includes(term) ||
-        customer.email.toLowerCase().includes(term),
+        customer.email.toLowerCase().includes(term) ||
+        customer.telefono.includes(term),
     )
   }, [customers, searchTerm])
 
@@ -51,7 +52,7 @@ function AdminCustomers() {
         </h2>
         <input
           type="text"
-          placeholder="Buscar por nombre o email..."
+          placeholder="Buscar por nombre, email o teléfono..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:max-w-xs"
@@ -81,6 +82,9 @@ function AdminCustomers() {
                   )}
                 </p>
                 <p className="text-sm text-slate-500">{customer.email}</p>
+                {customer.telefono && (
+                  <p className="text-sm text-slate-500">{customer.telefono}</p>
+                )}
                 <p className="text-xs text-slate-400">
                   Desde {new Date(customer.createdAt).toLocaleDateString('es-AR')}
                 </p>
