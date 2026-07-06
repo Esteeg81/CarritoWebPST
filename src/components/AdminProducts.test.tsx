@@ -156,4 +156,48 @@ describe('AdminProducts', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Auriculares')).toBeInTheDocument()
   })
+
+  it('filtra productos por nombre', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      product,
+      { ...product, id: 2, nombre: 'Mochila', categoria: 'Accesorios' },
+    ])
+    const user = userEvent.setup()
+    renderAdminProducts()
+
+    await screen.findByText('Auriculares')
+    await user.type(screen.getByPlaceholderText('Buscar producto...'), 'moch')
+
+    expect(screen.queryByText('Auriculares')).not.toBeInTheDocument()
+    expect(screen.getByText('Mochila')).toBeInTheDocument()
+    expect(screen.getByText('Productos (1)')).toBeInTheDocument()
+  })
+
+  it('filtra productos por categoría', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      product,
+      { ...product, id: 2, nombre: 'Mochila', categoria: 'Accesorios' },
+    ])
+    const user = userEvent.setup()
+    renderAdminProducts()
+
+    await screen.findByText('Auriculares')
+    await user.selectOptions(screen.getByDisplayValue('Todas las categorías'), 'Tech')
+
+    expect(screen.getByText('Auriculares')).toBeInTheDocument()
+    expect(screen.queryByText('Mochila')).not.toBeInTheDocument()
+  })
+
+  it('muestra un mensaje si ningún producto coincide con los filtros', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([product])
+    const user = userEvent.setup()
+    renderAdminProducts()
+
+    await screen.findByText('Auriculares')
+    await user.type(screen.getByPlaceholderText('Buscar producto...'), 'inexistente')
+
+    expect(
+      await screen.findByText(/no se encontraron productos con esos filtros/i),
+    ).toBeInTheDocument()
+  })
 })

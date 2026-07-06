@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import AdminCustomers from './AdminCustomers'
 import { AuthProvider } from '../context/AuthContext'
@@ -78,6 +79,66 @@ describe('AdminCustomers', () => {
 
     expect(
       await screen.findByText(/no se pudieron cargar los clientes/i),
+    ).toBeInTheDocument()
+  })
+
+  it('filtra clientes por nombre o email', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        nombre: 'Cliente Uno',
+        email: 'uno@example.com',
+        role: 'CUSTOMER',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        totalPedidos: 2,
+        totalGastado: 3000,
+      },
+      {
+        id: 2,
+        nombre: 'Cliente Dos',
+        email: 'dos@example.com',
+        role: 'CUSTOMER',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        totalPedidos: 0,
+        totalGastado: 0,
+      },
+    ])
+    const user = userEvent.setup()
+    renderAdminCustomers()
+
+    await screen.findByText('Cliente Uno')
+    await user.type(
+      screen.getByPlaceholderText('Buscar por nombre o email...'),
+      'dos@example',
+    )
+
+    expect(screen.queryByText('Cliente Uno')).not.toBeInTheDocument()
+    expect(screen.getByText('Cliente Dos')).toBeInTheDocument()
+  })
+
+  it('muestra un mensaje si ningún cliente coincide con la búsqueda', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        nombre: 'Cliente Uno',
+        email: 'uno@example.com',
+        role: 'CUSTOMER',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        totalPedidos: 2,
+        totalGastado: 3000,
+      },
+    ])
+    const user = userEvent.setup()
+    renderAdminCustomers()
+
+    await screen.findByText('Cliente Uno')
+    await user.type(
+      screen.getByPlaceholderText('Buscar por nombre o email...'),
+      'inexistente',
+    )
+
+    expect(
+      await screen.findByText(/no se encontraron clientes con esa búsqueda/i),
     ).toBeInTheDocument()
   })
 })

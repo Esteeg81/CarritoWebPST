@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
 import type { AdminOrder } from '../types'
@@ -11,6 +11,7 @@ function AdminOrders() {
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedCustomerId, setSelectedCustomerId] = useState('')
 
   useEffect(() => {
     api
@@ -19,6 +20,17 @@ function AdminOrders() {
       .catch(() => setError('No se pudieron cargar los pedidos.'))
       .finally(() => setIsLoading(false))
   }, [token])
+
+  const customers = useMemo(() => {
+    const map = new Map<number, { id: number; nombre: string; email: string }>()
+    orders.forEach((order) => map.set(order.user.id, order.user))
+    return Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  }, [orders])
+
+  const filteredOrders = useMemo(() => {
+    if (!selectedCustomerId) return orders
+    return orders.filter((order) => order.user.id === Number(selectedCustomerId))
+  }, [orders, selectedCustomerId])
 
   if (isLoading) {
     return <p className="text-center text-slate-500">Cargando pedidos...</p>
@@ -34,11 +46,32 @@ function AdminOrders() {
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold text-slate-800">
-        Pedidos ({orders.length})
-      </h2>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold text-slate-800">
+          Pedidos ({filteredOrders.length})
+        </h2>
+        <select
+          value={selectedCustomerId}
+          onChange={(e) => setSelectedCustomerId(e.target.value)}
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="">Todos los clientes</option>
+          {customers.map((customer) => (
+            <option key={customer.id} value={customer.id}>
+              {customer.nombre} ({customer.email})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {filteredOrders.length === 0 && (
+        <p className="text-center text-slate-500">
+          No se encontraron pedidos para ese cliente.
+        </p>
+      )}
+
       <ul className="flex flex-col gap-4">
-        {orders.map((order) => (
+        {filteredOrders.map((order) => (
           <li
             key={order.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"

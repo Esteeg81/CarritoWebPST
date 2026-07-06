@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { api, ApiError } from '../lib/api'
@@ -62,6 +62,23 @@ function AdminProducts() {
   const [editForm, setEditForm] = useState<ProductFormValues>(emptyForm)
   const [editError, setEditError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  const categories = useMemo(
+    () => Array.from(new Set(products.map((p) => p.categoria))).sort(),
+    [products],
+  )
+
+  const filteredProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    return products.filter((product) => {
+      const matchesCategory = !selectedCategory || product.categoria === selectedCategory
+      const matchesSearch = !term || product.nombre.toLowerCase().includes(term)
+      return matchesCategory && matchesSearch
+    })
+  }, [products, searchTerm, selectedCategory])
 
   const loadProducts = () => {
     setIsLoading(true)
@@ -221,11 +238,41 @@ function AdminProducts() {
         </button>
       </form>
 
-      <h2 className="mb-3 text-lg font-semibold text-slate-800">
-        Productos ({products.length})
-      </h2>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold text-slate-800">
+          Productos ({filteredProducts.length})
+        </h2>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            type="text"
+            placeholder="Buscar producto..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:max-w-xs"
+          />
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Todas las categorías</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {filteredProducts.length === 0 && (
+        <p className="text-center text-slate-500">
+          No se encontraron productos con esos filtros.
+        </p>
+      )}
+
       <ul className="flex flex-col gap-3">
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <li
             key={product.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"

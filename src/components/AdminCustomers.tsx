@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
 import type { Customer } from '../types'
@@ -11,6 +11,7 @@ function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     api
@@ -19,6 +20,16 @@ function AdminCustomers() {
       .catch(() => setError('No se pudieron cargar los clientes.'))
       .finally(() => setIsLoading(false))
   }, [token])
+
+  const filteredCustomers = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    if (!term) return customers
+    return customers.filter(
+      (customer) =>
+        customer.nombre.toLowerCase().includes(term) ||
+        customer.email.toLowerCase().includes(term),
+    )
+  }, [customers, searchTerm])
 
   if (isLoading) {
     return <p className="text-center text-slate-500">Cargando clientes...</p>
@@ -34,11 +45,27 @@ function AdminCustomers() {
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold text-slate-800">
-        Clientes ({customers.length})
-      </h2>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold text-slate-800">
+          Clientes ({filteredCustomers.length})
+        </h2>
+        <input
+          type="text"
+          placeholder="Buscar por nombre o email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:max-w-xs"
+        />
+      </div>
+
+      {filteredCustomers.length === 0 && (
+        <p className="text-center text-slate-500">
+          No se encontraron clientes con esa búsqueda.
+        </p>
+      )}
+
       <ul className="flex flex-col gap-3">
-        {customers.map((customer) => (
+        {filteredCustomers.map((customer) => (
           <li
             key={customer.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
