@@ -29,9 +29,12 @@ export interface OrderItem {
   cantidad: number
 }
 
+export type OrderStatus = 'PENDIENTE' | 'CONFIRMADO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO'
+
 export interface Order {
   id: number
   total: number
+  status: OrderStatus
   createdAt: string
   items: OrderItem[]
 }

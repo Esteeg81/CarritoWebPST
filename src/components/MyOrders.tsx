@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../lib/api'
+import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from '../lib/orderStatus'
 import type { Order } from '../types'
 
 const formatPrice = (value: number) =>
@@ -43,11 +44,18 @@ function MyOrders() {
             key={order.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
           >
-            <div className="mb-2 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+            <div className="mb-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
               <span className="font-medium text-slate-800">Pedido #{order.id}</span>
-              <span className="text-sm text-slate-400">
-                {new Date(order.createdAt).toLocaleString('es-AR')}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-400">
+                  {new Date(order.createdAt).toLocaleString('es-AR')}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${ORDER_STATUS_STYLES[order.status]}`}
+                >
+                  {ORDER_STATUS_LABELS[order.status]}
+                </span>
+              </div>
             </div>
             <ul className="mb-2 flex flex-col gap-1">
               {order.items.map((item) => (

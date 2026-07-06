@@ -29,6 +29,7 @@ describe('MyOrders', () => {
       {
         id: 4,
         total: 2000,
+        status: 'ENVIADO',
         createdAt: '2026-01-01T00:00:00.000Z',
         items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
       },
@@ -38,6 +39,7 @@ describe('MyOrders', () => {
 
     expect(await screen.findByText('Pedido #4')).toBeInTheDocument()
     expect(screen.getByText(/Auriculares × 2/)).toBeInTheDocument()
+    expect(screen.getByText('Enviado')).toBeInTheDocument()
     expect(api.get).toHaveBeenCalledWith('/api/orders/me', null)
   })
 

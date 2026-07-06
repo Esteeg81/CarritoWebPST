@@ -15,6 +15,14 @@ enum Role {
   ADMIN
 }
 
+enum OrderStatus {
+  PENDIENTE
+  CONFIRMADO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   nombre       String
@@ -41,6 +49,7 @@ model Order {
   userId    Int
   user      User        @relation(fields: [userId], references: [id])
   total     Float
+  status    OrderStatus @default(PENDIENTE)
   createdAt DateTime    @default(now())
   items     OrderItem[]
 }

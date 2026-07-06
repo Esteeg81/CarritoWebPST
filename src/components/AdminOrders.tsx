@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { api } from '../lib/api'
-import type { AdminOrder } from '../types'
+import { useToast } from '../hooks/useToast'
+import { api, ApiError } from '../lib/api'
+import { ORDER_STATUSES, ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from '../lib/orderStatus'
+import type { AdminOrder, OrderStatus } from '../types'
 
 const formatPrice = (value: number) =>
   value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
 
 function AdminOrders() {
   const { token } = useAuth()
+  const { showToast } = useToast()
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState('')
+  const [updatingId, setUpdatingId] = useState<number | null>(null)
 
   useEffect(() => {
     api
@@ -31,6 +35,26 @@ function AdminOrders() {
     if (!selectedCustomerId) return orders
     return orders.filter((order) => order.user.id === Number(selectedCustomerId))
   }, [orders, selectedCustomerId])
+
+  const handleStatusChange = async (id: number, status: OrderStatus) => {
+    setUpdatingId(id)
+    try {
+      const updated = await api.patch<AdminOrder>(
+        `/api/admin/orders/${id}/status`,
+        { status },
+        token,
+      )
+      setOrders((prev) => prev.map((order) => (order.id === id ? updated : order)))
+      showToast(`Pedido #${id} actualizado a "${ORDER_STATUS_LABELS[status]}".`)
+    } catch (err) {
+      showToast(
+        err instanceof ApiError ? err.message : 'No se pudo actualizar el estado.',
+        'error',
+      )
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   if (isLoading) {
     return <p className="text-center text-slate-500">Cargando pedidos...</p>
@@ -76,13 +100,34 @@ function AdminOrders() {
             key={order.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
           >
-            <div className="mb-2 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+            <div className="mb-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
               <span className="font-medium text-slate-800">
                 Pedido #{order.id} — {order.user.nombre} ({order.user.email})
               </span>
-              <span className="text-sm text-slate-400">
-                {new Date(order.createdAt).toLocaleString('es-AR')}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-400">
+                  {new Date(order.createdAt).toLocaleString('es-AR')}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${ORDER_STATUS_STYLES[order.status]}`}
+                >
+                  {ORDER_STATUS_LABELS[order.status]}
+                </span>
+                <select
+                  value={order.status}
+                  disabled={updatingId === order.id}
+                  onChange={(e) =>
+                    handleStatusChange(order.id, e.target.value as OrderStatus)
+                  }
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                >
+                  {ORDER_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {ORDER_STATUS_LABELS[status]}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <ul className="mb-2 flex flex-col gap-1">
               {order.items.map((item) => (

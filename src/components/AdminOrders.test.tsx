@@ -4,17 +4,27 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import AdminOrders from './AdminOrders'
 import { AuthProvider } from '../context/AuthContext'
-import { api } from '../lib/api'
+import { ToastProvider } from '../context/ToastContext'
+import { api, ApiError } from '../lib/api'
 
 vi.mock('../lib/api', () => ({
-  api: { get: vi.fn(), post: vi.fn() },
+  api: { get: vi.fn(), post: vi.fn(), patch: vi.fn() },
+  ApiError: class ApiError extends Error {
+    status: number
+    constructor(status: number, message: string) {
+      super(message)
+      this.status = status
+    }
+  },
 }))
 
 function renderAdminOrders() {
   return render(
     <MemoryRouter>
       <AuthProvider>
-        <AdminOrders />
+        <ToastProvider>
+          <AdminOrders />
+        </ToastProvider>
       </AuthProvider>
     </MemoryRouter>,
   )
@@ -22,6 +32,7 @@ function renderAdminOrders() {
 
 beforeEach(() => {
   vi.mocked(api.get).mockReset()
+  vi.mocked(api.patch).mockReset()
 })
 
 describe('AdminOrders', () => {
@@ -30,6 +41,7 @@ describe('AdminOrders', () => {
       {
         id: 1,
         total: 2000,
+        status: 'PENDIENTE',
         createdAt: '2026-01-01T00:00:00.000Z',
         user: { id: 2, nombre: 'Cliente Test', email: 'cliente@example.com' },
         items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
@@ -65,6 +77,7 @@ describe('AdminOrders', () => {
       {
         id: 1,
         total: 2000,
+        status: 'PENDIENTE',
         createdAt: '2026-01-01T00:00:00.000Z',
         user: { id: 2, nombre: 'Cliente Uno', email: 'uno@example.com' },
         items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
@@ -72,6 +85,7 @@ describe('AdminOrders', () => {
       {
         id: 2,
         total: 500,
+        status: 'PENDIENTE',
         createdAt: '2026-01-02T00:00:00.000Z',
         user: { id: 3, nombre: 'Cliente Dos', email: 'dos@example.com' },
         items: [{ id: 2, productId: 2, nombre: 'Mochila', precio: 500, cantidad: 1 }],
@@ -92,6 +106,7 @@ describe('AdminOrders', () => {
       {
         id: 1,
         total: 2000,
+        status: 'PENDIENTE',
         createdAt: '2026-01-01T00:00:00.000Z',
         user: { id: 2, nombre: 'Cliente Uno', email: 'uno@example.com' },
         items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
@@ -99,6 +114,7 @@ describe('AdminOrders', () => {
       {
         id: 2,
         total: 500,
+        status: 'PENDIENTE',
         createdAt: '2026-01-02T00:00:00.000Z',
         user: { id: 3, nombre: 'Cliente Dos', email: 'dos@example.com' },
         items: [{ id: 2, productId: 2, nombre: 'Mochila', precio: 500, cantidad: 1 }],
@@ -114,5 +130,62 @@ describe('AdminOrders', () => {
     await user.selectOptions(select, '')
     expect(screen.getByText(/Pedido #1/)).toBeInTheDocument()
     expect(screen.getByText(/Pedido #2/)).toBeInTheDocument()
+  })
+
+  it('actualiza el estado de un pedido', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        total: 2000,
+        status: 'PENDIENTE',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        user: { id: 2, nombre: 'Cliente Test', email: 'cliente@example.com' },
+        items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
+      },
+    ])
+    vi.mocked(api.patch).mockResolvedValueOnce({
+      id: 1,
+      total: 2000,
+      status: 'ENVIADO',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      user: { id: 2, nombre: 'Cliente Test', email: 'cliente@example.com' },
+      items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
+    })
+    const user = userEvent.setup()
+    renderAdminOrders()
+
+    await screen.findByText(/Pedido #1/)
+    await user.selectOptions(screen.getByDisplayValue('Pendiente'), 'ENVIADO')
+
+    expect(api.patch).toHaveBeenCalledWith(
+      '/api/admin/orders/1/status',
+      { status: 'ENVIADO' },
+      null,
+    )
+    expect(await screen.findByDisplayValue('Enviado')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Pedido #1 actualizado a "Enviado".'),
+    ).toBeInTheDocument()
+  })
+
+  it('muestra un error si falla la actualización del estado', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        total: 2000,
+        status: 'PENDIENTE',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        user: { id: 2, nombre: 'Cliente Test', email: 'cliente@example.com' },
+        items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 2 }],
+      },
+    ])
+    vi.mocked(api.patch).mockRejectedValueOnce(new ApiError(400, 'Estado inválido.'))
+    const user = userEvent.setup()
+    renderAdminOrders()
+
+    await screen.findByText(/Pedido #1/)
+    await user.selectOptions(screen.getByDisplayValue('Pendiente'), 'ENVIADO')
+
+    expect(await screen.findByText('Estado inválido.')).toBeInTheDocument()
   })
 })

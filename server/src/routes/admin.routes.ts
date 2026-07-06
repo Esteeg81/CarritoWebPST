@@ -19,6 +19,37 @@ adminRouter.get('/orders', async (_req: Request, res: Response) => {
   res.json(orders)
 })
 
+const orderStatusSchema = z.object({
+  status: z.enum(['PENDIENTE', 'CONFIRMADO', 'ENVIADO', 'ENTREGADO', 'CANCELADO']),
+})
+
+adminRouter.patch('/orders/:id/status', async (req: Request, res: Response) => {
+  const id = Number(req.params.id)
+  if (Number.isNaN(id)) {
+    throw new AppError(400, 'ID de pedido inválido.')
+  }
+
+  const parsed = orderStatusSchema.safeParse(req.body)
+  if (!parsed.success) {
+    throw new AppError(400, parsed.error.issues[0].message)
+  }
+
+  const existing = await prisma.order.findUnique({ where: { id } })
+  if (!existing) {
+    throw new AppError(404, 'Pedido no encontrado.')
+  }
+
+  const order = await prisma.order.update({
+    where: { id },
+    data: { status: parsed.data.status },
+    include: {
+      items: true,
+      user: { select: { id: true, nombre: true, email: true } },
+    },
+  })
+  res.json(order)
+})
+
 adminRouter.get('/customers', async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: 'desc' },
