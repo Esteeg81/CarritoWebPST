@@ -66,11 +66,12 @@ model OrderItem {
 }
 
 model SiteSettings {
-  id         Int      @id @default(1)
-  fontFamily String   @default("sans-serif")
-  textColor  String   @default("#1e293b")
-  headerBg   String   @default("#0f172a")
-  footerBg   String   @default("#ffffff")
-  mainBg     String   @default("#f8fafc")
-  updatedAt  DateTime @updatedAt
+  id                    Int      @id @default(1)
+  fontFamily            String   @default("sans-serif")
+  textColor             String   @default("#1e293b")
+  headerBg              String   @default("#0f172a")
+  footerBg              String   @default("#ffffff")
+  mainBg                String   @default("#f8fafc")
+  whatsappOrderTemplate String   @default("Nuevo pedido #{pedido}\nCliente: {cliente}\nTeléfono: {telefono}\n{items}\nTotal: ${total}")
+  updatedAt             DateTime @updatedAt
 }

@@ -5,6 +5,10 @@ import { AppError } from '../lib/errors.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import { sendAdminNotification } from '../lib/mailer.js'
 import { sendAdminWhatsApp } from '../lib/whatsapp.js'
+import {
+  DEFAULT_WHATSAPP_ORDER_TEMPLATE,
+  renderWhatsappOrderTemplate,
+} from '../lib/whatsappTemplate.js'
 
 export const ordersRouter = Router()
 
@@ -104,16 +108,20 @@ ordersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const nuevoPedidoMsg = `${order.user.nombre} (${order.user.email}) generó un pedido por un total de $${order.total}.`
   await sendAdminNotification(`Nuevo pedido #${order.id}`, nuevoPedidoMsg)
 
+  const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } })
   const itemsList = order.items
     .map((item) => `- ${item.nombre} x${item.cantidad}: $${item.precio * item.cantidad}`)
     .join('\n')
-  const whatsappMsg = [
-    `Nuevo pedido #${order.id}`,
-    `Cliente: ${order.user.nombre}`,
-    `Teléfono: ${order.user.telefono}`,
-    itemsList,
-    `Total: $${order.total}`,
-  ].join('\n')
+  const whatsappMsg = renderWhatsappOrderTemplate(
+    settings?.whatsappOrderTemplate ?? DEFAULT_WHATSAPP_ORDER_TEMPLATE,
+    {
+      pedido: order.id,
+      cliente: order.user.nombre,
+      telefono: order.user.telefono,
+      items: itemsList,
+      total: order.total,
+    },
+  )
   await sendAdminWhatsApp(whatsappMsg)
 
   if (sinStockProducts.length > 0) {

@@ -66,6 +66,27 @@ describe('AdminSettings', () => {
     ).toBeInTheDocument()
   })
 
+  it('permite editar la plantilla de whatsapp y la envía al guardar', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({
+      ...DEFAULT_SETTINGS,
+      whatsappOrderTemplate: 'Pedido #{pedido} confirmado',
+    })
+    const user = userEvent.setup()
+    renderAdminSettings()
+
+    await screen.findByText('Configuración del sitio')
+    const textarea = screen.getByLabelText(/mensaje de whatsapp para pedidos nuevos/i)
+    await user.clear(textarea)
+    await user.type(textarea, 'Pedido #{{pedido} confirmado')
+    await user.click(screen.getByRole('button', { name: /guardar cambios/i }))
+
+    expect(api.patch).toHaveBeenCalledWith(
+      '/api/admin/settings',
+      { ...DEFAULT_SETTINGS, whatsappOrderTemplate: 'Pedido #{pedido} confirmado' },
+      null,
+    )
+  })
+
   it('muestra un error si falla el guardado', async () => {
     vi.mocked(api.patch).mockRejectedValueOnce(new ApiError(400, 'Color inválido.'))
     const user = userEvent.setup()

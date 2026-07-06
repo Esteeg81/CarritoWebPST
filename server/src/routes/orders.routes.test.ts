@@ -89,6 +89,25 @@ describe('POST /api/orders', () => {
     expect(whatsappMsg).toContain('Total: $2500')
   })
 
+  it('usa la plantilla de whatsapp configurada en SiteSettings', async () => {
+    await prisma.siteSettings.upsert({
+      where: { id: 1 },
+      update: { whatsappOrderTemplate: 'Hola {cliente} ({telefono}), pedido #{pedido} por ${total}' },
+      create: { id: 1, whatsappOrderTemplate: 'Hola {cliente} ({telefono}), pedido #{pedido} por ${total}' },
+    })
+    const token = await registerAndGetToken('plantilla@example.com')
+
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+
+    expect(res.status).toBe(201)
+    expect(sendAdminWhatsApp).toHaveBeenCalledWith(
+      `Hola Test User (5491122334455), pedido #${res.body.order.id} por $1000`,
+    )
+  })
+
   it('avisa por mail y whatsapp si algún producto se queda sin stock', async () => {
     const token = await registerAndGetToken('sinstock@example.com')
 

@@ -34,6 +34,7 @@ describe('ThemeContext', () => {
       headerBg: '#222222',
       footerBg: '#333333',
       mainBg: '#444444',
+      whatsappOrderTemplate: 'Pedido #{pedido}',
     }
     vi.mocked(api.get).mockResolvedValueOnce(custom)
     const { result } = renderHook(() => useTheme(), { wrapper })

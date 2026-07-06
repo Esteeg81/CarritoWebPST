@@ -112,4 +112,27 @@ describe('PATCH /api/admin/settings', () => {
 
     expect(res.status).toBe(400)
   })
+
+  it('actualiza la plantilla de whatsapp de pedidos', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .patch('/api/admin/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ whatsappOrderTemplate: 'Pedido #{pedido} de {cliente}' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.whatsappOrderTemplate).toBe('Pedido #{pedido} de {cliente}')
+  })
+
+  it('rechaza una plantilla de whatsapp vacía', async () => {
+    const token = await getAdminToken()
+
+    const res = await request(app)
+      .patch('/api/admin/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ whatsappOrderTemplate: '' })
+
+    expect(res.status).toBe(400)
+  })
 })

@@ -65,4 +65,5 @@ export interface SiteSettings {
   headerBg: string
   footerBg: string
   mainBg: string
+  whatsappOrderTemplate: string
 }

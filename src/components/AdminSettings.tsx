@@ -108,6 +108,22 @@ function AdminSettings() {
         </label>
       </div>
 
+      <div className="mt-6 border-t border-slate-100 pt-4">
+        <label className="flex flex-col gap-1 text-sm text-slate-600">
+          Mensaje de WhatsApp para pedidos nuevos
+          <textarea
+            value={form.whatsappOrderTemplate}
+            onChange={(e) => setForm({ ...form, whatsappOrderTemplate: e.target.value })}
+            rows={5}
+            className="rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+          />
+        </label>
+        <p className="mt-1 text-xs text-slate-400">
+          Variables disponibles: {'{pedido}'}, {'{cliente}'}, {'{telefono}'}, {'{items}'},{' '}
+          {'{total}'}
+        </p>
+      </div>
+
       {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
       <button

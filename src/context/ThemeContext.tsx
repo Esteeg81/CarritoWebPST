@@ -8,6 +8,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   headerBg: '#0f172a',
   footerBg: '#ffffff',
   mainBg: '#f8fafc',
+  whatsappOrderTemplate:
+    'Nuevo pedido #{pedido}\nCliente: {cliente}\nTeléfono: {telefono}\n{items}\nTotal: ${total}',
 }
 
 interface ThemeContextValue {

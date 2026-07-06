@@ -154,6 +154,9 @@ const settingsSchema = z
     headerBg: hexColor,
     footerBg: hexColor,
     mainBg: hexColor,
+    whatsappOrderTemplate: z
+      .string()
+      .min(1, 'La plantilla de WhatsApp no puede estar vacía.'),
   })
   .partial()
 
