@@ -13,6 +13,7 @@ import Checkout from './components/Checkout'
 import MyOrders from './components/MyOrders'
 import AdminLayout from './components/AdminLayout'
 import AdminOrders from './components/AdminOrders'
+import AdminPreparation from './components/AdminPreparation'
 import AdminProducts from './components/AdminProducts'
 import AdminCustomers from './components/AdminCustomers'
 import AdminSettings from './components/AdminSettings'
@@ -77,6 +78,7 @@ function AppShell() {
           >
             <Route index element={<Navigate to="pedidos" replace />} />
             <Route path="pedidos" element={<AdminOrders />} />
+            <Route path="preparacion" element={<AdminPreparation />} />
             <Route path="productos" element={<AdminProducts />} />
             <Route path="clientes" element={<AdminCustomers />} />
             <Route path="configuracion" element={<AdminSettings />} />

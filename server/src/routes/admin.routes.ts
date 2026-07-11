@@ -22,7 +22,14 @@ adminRouter.get('/orders', async (_req: Request, res: Response) => {
 })
 
 const orderStatusSchema = z.object({
-  status: z.enum(['PENDIENTE', 'CONFIRMADO', 'ENVIADO', 'ENTREGADO', 'CANCELADO']),
+  status: z.enum([
+    'PENDIENTE',
+    'EN_PREPARACION',
+    'CONFIRMADO',
+    'ENVIADO',
+    'ENTREGADO',
+    'CANCELADO',
+  ]),
 })
 
 adminRouter.patch('/orders/:id/status', async (req: Request, res: Response) => {
@@ -50,6 +57,29 @@ adminRouter.patch('/orders/:id/status', async (req: Request, res: Response) => {
     },
   })
   res.json(order)
+})
+
+adminRouter.post('/orders/prepare', async (_req: Request, res: Response) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const pendingOrders = await tx.order.findMany({
+      where: { status: 'PENDIENTE' },
+      select: { id: true },
+    })
+
+    if (pendingOrders.length === 0) {
+      return { count: 0, orderIds: [] as number[] }
+    }
+
+    const orderIds = pendingOrders.map((order) => order.id)
+    await tx.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { status: 'EN_PREPARACION' },
+    })
+
+    return { count: orderIds.length, orderIds }
+  })
+
+  res.json(result)
 })
 
 adminRouter.get('/customers', async (_req: Request, res: Response) => {

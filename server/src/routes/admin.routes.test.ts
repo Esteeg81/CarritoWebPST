@@ -136,4 +136,92 @@ describe('PATCH /api/admin/orders/:id/status', () => {
 
     expect(res.status).toBe(404)
   })
+
+  it('acepta el estado "En preparación"', async () => {
+    const customerToken = await registerAndGetToken('cliente2@example.com')
+    const orderRes = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+
+    const adminToken = await registerAndGetToken('admin@example.com')
+
+    const res = await request(app)
+      .patch(`/api/admin/orders/${orderRes.body.order.id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'EN_PREPARACION' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('EN_PREPARACION')
+  })
+})
+
+describe('POST /api/admin/orders/prepare', () => {
+  it('rechaza sin autenticación', async () => {
+    const res = await request(app).post('/api/admin/orders/prepare')
+    expect(res.status).toBe(401)
+  })
+
+  it('rechaza a un usuario que no es admin', async () => {
+    const token = await registerAndGetToken('cliente@example.com')
+
+    const res = await request(app)
+      .post('/api/admin/orders/prepare')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(403)
+  })
+
+  it('pasa a "En preparación" solo los pedidos pendientes', async () => {
+    const cliente1 = await registerAndGetToken('cliente1@example.com')
+    const cliente2 = await registerAndGetToken('cliente2@example.com')
+
+    const pendiente1 = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${cliente1}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+    const pendiente2 = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${cliente2}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+
+    const adminToken = await registerAndGetToken('admin@example.com')
+
+    // Un pedido ya confirmado no debe verse afectado.
+    await request(app)
+      .patch(`/api/admin/orders/${pendiente2.body.order.id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'CONFIRMADO' })
+
+    const res = await request(app)
+      .post('/api/admin/orders/prepare')
+      .set('Authorization', `Bearer ${adminToken}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.count).toBe(1)
+    expect(res.body.orderIds).toEqual([pendiente1.body.order.id])
+
+    const orders = await request(app)
+      .get('/api/admin/orders')
+      .set('Authorization', `Bearer ${adminToken}`)
+    const actualizado = orders.body.find(
+      (o: { id: number }) => o.id === pendiente1.body.order.id,
+    )
+    const noTocado = orders.body.find(
+      (o: { id: number }) => o.id === pendiente2.body.order.id,
+    )
+    expect(actualizado.status).toBe('EN_PREPARACION')
+    expect(noTocado.status).toBe('CONFIRMADO')
+  })
+
+  it('devuelve count 0 si no hay pedidos pendientes', async () => {
+    const adminToken = await registerAndGetToken('admin@example.com')
+
+    const res = await request(app)
+      .post('/api/admin/orders/prepare')
+      .set('Authorization', `Bearer ${adminToken}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ count: 0, orderIds: [] })
+  })
 })

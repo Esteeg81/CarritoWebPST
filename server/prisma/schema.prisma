@@ -17,6 +17,7 @@ enum Role {
 
 enum OrderStatus {
   PENDIENTE
+  EN_PREPARACION
   CONFIRMADO
   ENVIADO
   ENTREGADO

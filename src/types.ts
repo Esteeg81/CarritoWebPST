@@ -30,7 +30,13 @@ export interface OrderItem {
   cantidad: number
 }
 
-export type OrderStatus = 'PENDIENTE' | 'CONFIRMADO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO'
+export type OrderStatus =
+  | 'PENDIENTE'
+  | 'EN_PREPARACION'
+  | 'CONFIRMADO'
+  | 'ENVIADO'
+  | 'ENTREGADO'
+  | 'CANCELADO'
 
 export interface Order {
   id: number

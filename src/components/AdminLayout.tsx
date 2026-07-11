@@ -12,6 +12,9 @@ function AdminLayout() {
         <NavLink to="/admin/pedidos" className={tabClass}>
           Pedidos
         </NavLink>
+        <NavLink to="/admin/preparacion" className={tabClass}>
+          Preparación
+        </NavLink>
         <NavLink to="/admin/productos" className={tabClass}>
           Productos
         </NavLink>
