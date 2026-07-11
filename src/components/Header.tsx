@@ -17,15 +17,21 @@ function Header({ onCartClick }: HeaderProps) {
       className="text-white shadow-md"
       style={{ backgroundColor: settings.headerBg }}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4">
         <Link to="/" className="text-xl font-bold tracking-tight">
           🛒 Carrito Web
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="hidden sm:inline">Hola, {user.nombre}</span>
+              <Link
+                to="/mi-perfil"
+                className="rounded-full bg-slate-700 px-3 py-1.5 font-medium transition-colors hover:bg-slate-600"
+              >
+                Mis datos
+              </Link>
               <Link
                 to="/mis-pedidos"
                 className="rounded-full bg-slate-700 px-3 py-1.5 font-medium transition-colors hover:bg-slate-600"

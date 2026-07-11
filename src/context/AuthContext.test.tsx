@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { AuthProvider } from './AuthContext'
 import { useAuth } from '../hooks/useAuth'
 import { api, ApiError } from '../lib/api'
+import type { User } from '../types'
 
 vi.mock('../lib/api', () => ({
   api: { get: vi.fn(), post: vi.fn() },
@@ -20,7 +21,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 )
 
-const mockUser = {
+const mockUser: User = {
   id: 1,
   nombre: 'Juan Pérez',
   email: 'juan@example.com',
@@ -167,5 +168,21 @@ describe('AuthContext', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.isAuthenticated).toBe(false)
     expect(localStorage.getItem('carritoweb_token')).toBeNull()
+  })
+
+  it('updateUser reemplaza los datos del usuario en el estado', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({ token: 'fake-token', user: mockUser })
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    await act(async () => {
+      await result.current.login('juan@example.com', '1234')
+    })
+
+    const updated = { ...mockUser, nombre: 'Juan Actualizado', telefono: '5493425112970' }
+    act(() => result.current.updateUser(updated))
+
+    expect(result.current.user).toEqual(updated)
   })
 })
