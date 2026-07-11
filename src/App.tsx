@@ -11,6 +11,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Checkout from './components/Checkout'
 import MyOrders from './components/MyOrders'
+import Profile from './components/Profile'
 import AdminLayout from './components/AdminLayout'
 import AdminOrders from './components/AdminOrders'
 import AdminPreparation from './components/AdminPreparation'
@@ -65,6 +66,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <MyOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mi-perfil"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

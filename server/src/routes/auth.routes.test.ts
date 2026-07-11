@@ -148,3 +148,75 @@ describe('GET /api/auth/me', () => {
     expect(res.body.user.telefono).toBe('5491122334455')
   })
 })
+
+describe('PATCH /api/auth/me', () => {
+  async function registerAndGetToken(email: string, telefono = '5491122334455') {
+    const res = await request(app).post('/api/auth/register').send({
+      nombre: 'Perfil User',
+      email,
+      telefono,
+      password: '1234',
+    })
+    return res.body.token as string
+  }
+
+  it('rechaza sin token', async () => {
+    const res = await request(app).patch('/api/auth/me').send({ nombre: 'Nuevo' })
+    expect(res.status).toBe(401)
+  })
+
+  it('actualiza el nombre y el teléfono', async () => {
+    const token = await registerAndGetToken('perfil1@example.com')
+
+    const res = await request(app)
+      .patch('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nombre: 'Nombre Nuevo', telefono: '5493425112970' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.user.nombre).toBe('Nombre Nuevo')
+    expect(res.body.user.telefono).toBe('5493425112970')
+  })
+
+  it('permite completar el teléfono de una cuenta que no lo tenía', async () => {
+    // Simula un usuario registrado antes de que el teléfono fuera obligatorio.
+    const registerRes = await request(app).post('/api/auth/register').send({
+      nombre: 'Cliente Viejo',
+      email: 'viejo@example.com',
+      telefono: '5491122334455',
+      password: '1234',
+    })
+    const token = registerRes.body.token
+
+    const res = await request(app)
+      .patch('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ telefono: '5493425112970' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.user.telefono).toBe('5493425112970')
+    expect(res.body.user.nombre).toBe('Cliente Viejo')
+  })
+
+  it('rechaza un teléfono con formato inválido', async () => {
+    const token = await registerAndGetToken('perfil2@example.com')
+
+    const res = await request(app)
+      .patch('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ telefono: '123' })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('rechaza un nombre vacío', async () => {
+    const token = await registerAndGetToken('perfil3@example.com')
+
+    const res = await request(app)
+      .patch('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nombre: '' })
+
+    expect(res.status).toBe(400)
+  })
+})

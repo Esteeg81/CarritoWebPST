@@ -112,3 +112,30 @@ authRouter.get('/me', requireAuth, async (req: Request, res: Response) => {
 
   res.json({ user: toSafeUser(user) })
 })
+
+const updateProfileSchema = z
+  .object({
+    nombre: z.string().min(1, 'El nombre es obligatorio.'),
+    telefono: z
+      .string()
+      .regex(/^\d{8,15}$/, 'El teléfono debe tener entre 8 y 15 dígitos, con código de país.'),
+  })
+  .partial()
+
+authRouter.patch('/me', requireAuth, async (req: Request, res: Response) => {
+  if (!req.userId) {
+    throw new AppError(401, 'No autenticado.')
+  }
+
+  const parsed = updateProfileSchema.safeParse(req.body)
+  if (!parsed.success) {
+    throw new AppError(400, parsed.error.issues[0].message)
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: parsed.data,
+  })
+
+  res.json({ user: toSafeUser(user) })
+})
