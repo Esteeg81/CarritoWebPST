@@ -8,7 +8,7 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
 function AdminLayout() {
   return (
     <div className="mx-auto max-w-3xl">
-      <nav className="mb-6 flex gap-2 border-b border-slate-200 pb-4">
+      <nav className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4">
         <NavLink to="/admin/pedidos" className={tabClass}>
           Pedidos
         </NavLink>

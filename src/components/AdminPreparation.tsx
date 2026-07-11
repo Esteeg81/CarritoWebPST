@@ -9,6 +9,11 @@ interface PrepareResponse {
   orderIds: number[]
 }
 
+interface WhatsAppSummaryResponse {
+  sent: boolean
+  count: number
+}
+
 function AdminPreparation() {
   const { token } = useAuth()
   const { showToast } = useToast()
@@ -16,6 +21,7 @@ function AdminPreparation() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isPreparing, setIsPreparing] = useState(false)
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false)
 
   const loadOrders = () => {
     setIsLoading(true)
@@ -72,6 +78,30 @@ function AdminPreparation() {
     }
   }
 
+  const handleSendWhatsApp = async () => {
+    setIsSendingWhatsApp(true)
+    try {
+      const result = await api.post<WhatsAppSummaryResponse>(
+        '/api/admin/orders/pending-summary/whatsapp',
+        undefined,
+        token,
+      )
+      showToast(
+        result.sent
+          ? 'Resumen enviado a tu WhatsApp.'
+          : 'No se pudo enviar: revisá la configuración de WhatsApp del admin.',
+        result.sent ? 'success' : 'error',
+      )
+    } catch (err) {
+      showToast(
+        err instanceof ApiError ? err.message : 'No se pudo enviar el resumen por WhatsApp.',
+        'error',
+      )
+    } finally {
+      setIsSendingWhatsApp(false)
+    }
+  }
+
   if (isLoading) {
     return <p className="text-center text-slate-500">Cargando pedidos pendientes...</p>
   }
@@ -109,14 +139,24 @@ function AdminPreparation() {
         Pedidos incluidos: {pendingOrders.map((order) => `#${order.id}`).join(', ')}
       </p>
 
-      <button
-        type="button"
-        onClick={handlePrepare}
-        disabled={isPreparing}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-      >
-        {isPreparing ? 'Actualizando...' : 'Marcar pedidos como en preparación'}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={handlePrepare}
+          disabled={isPreparing}
+          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        >
+          {isPreparing ? 'Actualizando...' : 'Marcar pedidos como en preparación'}
+        </button>
+        <button
+          type="button"
+          onClick={handleSendWhatsApp}
+          disabled={isSendingWhatsApp}
+          className="rounded-md border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+        >
+          {isSendingWhatsApp ? 'Enviando...' : 'Enviar resumen por WhatsApp'}
+        </button>
+      </div>
     </div>
   )
 }

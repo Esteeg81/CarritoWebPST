@@ -13,9 +13,10 @@ describe('sendAdminWhatsApp', () => {
     vi.resetModules()
     const { sendAdminWhatsApp } = await import('./whatsapp.js')
 
-    await sendAdminWhatsApp('Mensaje de prueba')
+    const sent = await sendAdminWhatsApp('Mensaje de prueba')
 
     expect(fetchMock).not.toHaveBeenCalled()
+    expect(sent).toBe(false)
   })
 
   it('llama a la API de CallMeBot cuando está configurado', async () => {
@@ -26,8 +27,9 @@ describe('sendAdminWhatsApp', () => {
     vi.resetModules()
     const { sendAdminWhatsApp } = await import('./whatsapp.js')
 
-    await sendAdminWhatsApp('Mensaje de prueba')
+    const sent = await sendAdminWhatsApp('Mensaje de prueba')
 
+    expect(sent).toBe(true)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const calledUrl = fetchMock.mock.calls[0][0] as string
     expect(calledUrl).toContain('https://api.callmebot.com/whatsapp.php')
@@ -44,6 +46,6 @@ describe('sendAdminWhatsApp', () => {
     vi.resetModules()
     const { sendAdminWhatsApp } = await import('./whatsapp.js')
 
-    await expect(sendAdminWhatsApp('Mensaje')).resolves.toBeUndefined()
+    await expect(sendAdminWhatsApp('Mensaje')).resolves.toBe(false)
   })
 })

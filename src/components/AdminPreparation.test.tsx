@@ -168,4 +168,53 @@ describe('AdminPreparation', () => {
       await screen.findByText(/no se pudieron cargar los pedidos/i),
     ).toBeInTheDocument()
   })
+
+  it('envía el resumen por whatsapp', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        total: 1000,
+        status: 'PENDIENTE',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        user: { id: 2, nombre: 'Cliente Uno', email: 'uno@example.com' },
+        items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 1 }],
+      },
+    ])
+    vi.mocked(api.post).mockResolvedValueOnce({ sent: true, count: 1 })
+    const user = userEvent.setup()
+    renderAdminPreparation()
+
+    await screen.findByText('Resumen de preparación (1 pedido)')
+    await user.click(screen.getByRole('button', { name: /enviar resumen por whatsapp/i }))
+
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/admin/orders/pending-summary/whatsapp',
+      undefined,
+      null,
+    )
+    expect(await screen.findByText('Resumen enviado a tu WhatsApp.')).toBeInTheDocument()
+  })
+
+  it('avisa si el whatsapp del admin no está configurado', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce([
+      {
+        id: 1,
+        total: 1000,
+        status: 'PENDIENTE',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        user: { id: 2, nombre: 'Cliente Uno', email: 'uno@example.com' },
+        items: [{ id: 1, productId: 1, nombre: 'Auriculares', precio: 1000, cantidad: 1 }],
+      },
+    ])
+    vi.mocked(api.post).mockResolvedValueOnce({ sent: false, count: 1 })
+    const user = userEvent.setup()
+    renderAdminPreparation()
+
+    await screen.findByText('Resumen de preparación (1 pedido)')
+    await user.click(screen.getByRole('button', { name: /enviar resumen por whatsapp/i }))
+
+    expect(
+      await screen.findByText(/no se pudo enviar: revisá la configuración/i),
+    ).toBeInTheDocument()
+  })
 })

@@ -82,6 +82,41 @@ adminRouter.post('/orders/prepare', async (_req: Request, res: Response) => {
   res.json(result)
 })
 
+adminRouter.post(
+  '/orders/pending-summary/whatsapp',
+  async (_req: Request, res: Response) => {
+    const pendingOrders = await prisma.order.findMany({
+      where: { status: 'PENDIENTE' },
+      include: { items: true },
+    })
+
+    if (pendingOrders.length === 0) {
+      res.json({ sent: false, count: 0 })
+      return
+    }
+
+    const cantidadPorProducto = new Map<string, number>()
+    pendingOrders.forEach((order) => {
+      order.items.forEach((item) => {
+        cantidadPorProducto.set(
+          item.nombre,
+          (cantidadPorProducto.get(item.nombre) ?? 0) + item.cantidad,
+        )
+      })
+    })
+
+    const detalle = Array.from(cantidadPorProducto.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([nombre, cantidad]) => `- ${nombre}: ${cantidad} u.`)
+      .join('\n')
+
+    const mensaje = `Resumen de preparación (${pendingOrders.length} ${pendingOrders.length === 1 ? 'pedido' : 'pedidos'}):\n${detalle}`
+    const sent = await sendAdminWhatsApp(mensaje)
+
+    res.json({ sent, count: pendingOrders.length })
+  },
+)
+
 adminRouter.get('/customers', async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: 'desc' },

@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../app.js'
 import { prisma } from '../lib/prisma.js'
+import { sendAdminWhatsApp } from '../lib/whatsapp.js'
+
+vi.mock('../lib/whatsapp.js', () => ({
+  sendAdminWhatsApp: vi.fn(),
+}))
 
 const app = createApp()
 
 beforeEach(async () => {
+  vi.mocked(sendAdminWhatsApp).mockReset()
   await prisma.product.create({
     data: {
       id: 1,
@@ -223,5 +229,76 @@ describe('POST /api/admin/orders/prepare', () => {
 
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ count: 0, orderIds: [] })
+  })
+})
+
+describe('POST /api/admin/orders/pending-summary/whatsapp', () => {
+  it('rechaza sin autenticación', async () => {
+    const res = await request(app).post('/api/admin/orders/pending-summary/whatsapp')
+    expect(res.status).toBe(401)
+  })
+
+  it('rechaza a un usuario que no es admin', async () => {
+    const token = await registerAndGetToken('cliente@example.com')
+
+    const res = await request(app)
+      .post('/api/admin/orders/pending-summary/whatsapp')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(403)
+  })
+
+  it('envía por whatsapp el resumen agrupado de los pedidos pendientes', async () => {
+    vi.mocked(sendAdminWhatsApp).mockResolvedValue(true)
+    await prisma.product.create({
+      data: {
+        id: 2,
+        nombre: 'Mochila',
+        precio: 500,
+        imagen: 'y.png',
+        stock: 5,
+        categoria: 'Accesorios',
+      },
+    })
+    const cliente1 = await registerAndGetToken('cliente1@example.com')
+    const cliente2 = await registerAndGetToken('cliente2@example.com')
+
+    await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${cliente1}`)
+      .send({
+        items: [
+          { productId: 1, cantidad: 2 },
+          { productId: 2, cantidad: 1 },
+        ],
+      })
+    await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${cliente2}`)
+      .send({ items: [{ productId: 1, cantidad: 1 }] })
+
+    const adminToken = await registerAndGetToken('admin@example.com')
+
+    const res = await request(app)
+      .post('/api/admin/orders/pending-summary/whatsapp')
+      .set('Authorization', `Bearer ${adminToken}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ sent: true, count: 2 })
+    expect(sendAdminWhatsApp).toHaveBeenCalledWith(
+      'Resumen de preparación (2 pedidos):\n- Auriculares: 3 u.\n- Mochila: 1 u.',
+    )
+  })
+
+  it('devuelve sent false si no hay pedidos pendientes', async () => {
+    const adminToken = await registerAndGetToken('admin@example.com')
+
+    const res = await request(app)
+      .post('/api/admin/orders/pending-summary/whatsapp')
+      .set('Authorization', `Bearer ${adminToken}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ sent: false, count: 0 })
+    expect(sendAdminWhatsApp).not.toHaveBeenCalled()
   })
 })
